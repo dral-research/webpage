@@ -1913,36 +1913,50 @@ const GH = {
 };
 
 async function ghSave(filename, data, message) {
-  if (!GH.token) {
-    alert('Please enter your GitHub Personal Access Token in the PAT bar at the top.');
-    return false;
-  }
-  try {
-    const headers = { 'Content-Type': 'application/json', Authorization: `token ${GH.token}` };
-    const apiUrl = `https://api.github.com/repos/${GH.repo}/contents/data/${filename}`;
-    // Get current SHA (needed to update existing file)
-    let sha;
+  if (!GH.token) return false;
+  const headers = { 'Content-Type': 'application/json', Authorization: `token ${GH.token}` };
+  const apiUrl = `https://api.github.com/repos/${GH.repo}/contents/data/${filename}`;
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const r = await fetch(apiUrl, { headers });
-      if (r.ok) { const d = await r.json(); sha = d.sha; }
-    } catch(e) { /* new file, no SHA needed */ }
-    const body = {
-      message: message || `Update ${filename}`,
-      content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
-      branch: GH.branch,
-    };
-    if (sha) body.sha = sha;
-    const res = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
-    if (!res.ok) {
+      let sha;
+      const current = await fetch(`${apiUrl}?ref=${encodeURIComponent(GH.branch)}`, { headers });
+      if (current.ok) {
+        const d = await current.json();
+        sha = d.sha;
+      } else if (current.status !== 404) {
+        const err = await current.json().catch(() => ({}));
+        throw new Error(`${current.status}: ${err.message || current.statusText}`);
+      }
+
+      const body = {
+        message: message || `Update ${filename}`,
+        content,
+        branch: GH.branch,
+      };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+      if (res.ok) return true;
+
       const err = await res.json().catch(() => ({}));
+      if (res.status === 409 && attempt < 3) {
+        await new Promise(r => setTimeout(r, 500 * attempt));
+        continue;
+      }
       throw new Error(`${res.status}: ${err.message || res.statusText}`);
+    } catch(e) {
+      if (attempt < 3 && /409|sha|Conflict/i.test(e.message || '')) {
+        await new Promise(r => setTimeout(r, 500 * attempt));
+        continue;
+      }
+      console.error(`GitHub save error (${filename}):`, e);
+      alert(`Save failed for ${filename}:\n${e.message}\n\nIf this was a conflict, try Save again after the page finishes saving. Also check your PAT has Contents: write permission.`);
+      return false;
     }
-    return true;
-  } catch(e) {
-    console.error(`GitHub save error (${filename}):`, e);
-    alert(`Save failed for ${filename}:\n${e.message}\n\nCheck your PAT has Contents: write permission.`);
-    return false;
   }
+  return false;
 }
 
 async function testGHToken() {
@@ -2115,6 +2129,15 @@ function cleanForJson(obj) {
 
 async function saveToGitHub() {
   if (!D) return false;
+  if (!GH.token) {
+    showSaveFailed();
+    const patInput = document.getElementById('gh-pat-input');
+    const patStatus = document.getElementById('gh-pat-status');
+    if (patStatus) patStatus.innerHTML = '<span style="color:#dc2626">Enter a GitHub PAT before saving.</span>';
+    if (patInput) patInput.focus();
+    alert('GitHub PAT is required to save changes. Enter a fine-grained token with Contents: Read and write, then click Test.');
+    return false;
+  }
   showSaving();
   try {
     const results = await Promise.all([
