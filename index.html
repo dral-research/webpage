@@ -2042,10 +2042,25 @@ function setLoading(msg){
   document.getElementById('loadMsg').textContent = msg;
 }
 
+function showSaving(){
+  const el = document.getElementById('saveIndicator');
+  if(!el) return;
+  el.textContent = 'Saving...';
+  el.classList.add('show');
+}
 function showSaved(){
   const el = document.getElementById('saveIndicator');
+  if(!el) return;
+  el.textContent = 'Saved';
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'), 2000);
+}
+function showSaveFailed(){
+  const el = document.getElementById('saveIndicator');
+  if(!el) return;
+  el.textContent = 'Save failed';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3500);
 }
 /* ══════════════════════════════════════════════════
    DATA LOAD / SAVE (GitHub JSON files)
@@ -2099,7 +2114,7 @@ function cleanForJson(obj) {
 }
 
 async function saveToGitHub() {
-  if (!D) return;
+  if (!D) return false;
   showSaving();
   try {
     const results = await Promise.all([
@@ -2124,10 +2139,15 @@ async function saveToGitHub() {
     if (results.every(Boolean)) {
       showSaved();
       try { localStorage.setItem('dral_data', JSON.stringify(D)); } catch(e) {}
+      return true;
     }
+    showSaveFailed();
+    return false;
   } catch(e) {
     console.error('Save error:', e);
+    showSaveFailed();
     alert('Save failed: ' + (e.message || e));
+    return false;
   }
 }
 
@@ -2136,7 +2156,7 @@ async function saveToGitHub() {
  * This prevents oversized JSON commits and slow page loads.
  * Images that are already URLs (starting with http) are kept as-is.
  */
-const FIRESTORE_MAX_BASE64 = 400000; // ~300KB image — safe limit per base64 string
+const MAX_INLINE_BASE64 = 400000; // ~300KB image - safe limit per base64 string
 
 function stripLargeBase64(obj, _depth=0) {
   if(_depth > 8) return obj;
@@ -3044,8 +3064,9 @@ async function saveProject(){
   };
   if(id){const i=D.projects.findIndex(p=>p.id===id);D.projects[i]=obj;}
   else{D.projects.push(obj);}
-  await saveToGitHub();
+  const saved = await saveToGitHub();
   btn.disabled=false; btn.textContent='Save Project';
+  if(!saved) return;
   logChange('Project saved', document.getElementById('pfId').value ? 'Updated: '+document.getElementById('pfTitle').value : 'Added: '+document.getElementById('pfTitle').value);
   closeModal('pFormModal'); rProjects(); renderStats();
 }
@@ -3341,8 +3362,9 @@ async function saveRec(){
   };
   if(id){const i=D.recruiting.findIndex(r=>r.id===id);D.recruiting[i]=obj;}
   else{D.recruiting.unshift(obj);}
-  await saveToGitHub();
+  const saved = await saveToGitHub();
   btn.disabled=false; btn.textContent='Save Posting';
+  if(!saved) return;
   closeModal('rFormModal'); rRec();
 }
 
@@ -3686,8 +3708,9 @@ async function saveNews(){
       address:obj.address||null,mapsUrl:obj.mapsUrl||null,
       newsId:id||obj.id,autoGen:true});
   }
-  await saveToGitHub();
+  const saved = await saveToGitHub();
   btn.disabled=false; btn.textContent='Save News';
+  if(!saved) return;
   logChange('News saved', document.getElementById('nfTitle').value);
   closeModal('nFormModal'); rNews(); rCalendar();
 }
@@ -4425,8 +4448,9 @@ async function saveEvent(){
   }
   D.events=D.events.filter(e=>e.parentId!==id&&e.id!==id);
   D.events.push(...toAdd);
-  await saveToGitHub();
+  const saved = await saveToGitHub();
   btn.disabled=false; btn.textContent='Save Event';
+  if(!saved) return;
   closeModal('evFormModal'); rCalendar();
 }
 
@@ -4768,8 +4792,9 @@ async function savePub(){
   };
   const idx=D.publications.findIndex(p=>p.id===id);
   if(idx>=0) D.publications[idx]=obj; else D.publications.push(obj);
-  await saveToGitHub();
+  const saved = await saveToGitHub();
   btn.disabled=false; btn.textContent='Save';
+  if(!saved) return;
   closeModal('pubFormModal'); rPublications();
 }
 
@@ -4846,8 +4871,9 @@ async function saveResource(){
   };
   const idx=D.resources.findIndex(r=>r.id===id);
   if(idx>=0) D.resources[idx]=obj; else D.resources.push(obj);
-  await saveToGitHub();
+  const saved = await saveToGitHub();
   btn.disabled=false; btn.textContent='Save';
+  if(!saved) return;
   closeModal('resFormModal'); rResources();
 }
 
