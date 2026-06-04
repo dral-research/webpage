@@ -1963,7 +1963,7 @@ async function ghCommitFiles(files, message='Update website data'){
       });
       return true;
     }catch(e){
-      const conflict = /409|Reference update failed|sha|Conflict/i.test(e.message || '');
+      const conflict = /409|422|Reference update failed|fast forward|sha|Conflict/i.test(e.message || '');
       if(conflict && attempt < 4){
         await new Promise(r => setTimeout(r, 700 * attempt));
         continue;
@@ -3803,7 +3803,17 @@ function confirmDelete(type,id){
     } else if(type==='res'){
       D.resources=(D.resources||[]).filter(r=>r.id!==id);
     }
-    await saveToGitHub();
+    const filesByType = {
+      member: ['members.json','projects.json'],
+      project: ['projects.json'],
+      rec: ['recruiting.json'],
+      news: ['news.json'],
+      event: ['events.json'],
+      pub: ['publications.json'],
+      res: ['resources.json'],
+    };
+    const saved = await saveDataFiles(filesByType[type] || allDataFiles().map(([filename]) => filename), `Delete ${labels[type] || 'item'}`);
+    if(!saved) return;
     closeModal('confirmModal');
     renderAll();
   };
