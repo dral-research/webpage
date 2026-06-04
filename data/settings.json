@@ -81,17 +81,52 @@
   "typography": {
     "headingFontId": "dm-sans",
     "bodyFontId": "dm-sans",
-    "heroHead": { "size": "3.40", "weight": "600" },
-    "tagline": { "size": "2.00", "color": "#2d4a3e", "weight": "600" },
-    "pageTitle": { "size": "2.10", "color": "#2d4a3e", "weight": "600" },
-    "sectionHead": { "size": "1.40", "color": "#2d4a3e", "weight": "600" },
-    "itemTitle": { "size": "1.35", "weight": "500" },
-    "body": { "size": "1.00" },
-    "pageSub": { "size": "0.90", "color": "#6b7280" },
-    "navBrand": { "size": "1.45" },
-    "calMonth": { "size": "1.50", "color": "#2d4a3e", "weight": "600" },
-    "newsletterHead": { "size": "1.50", "weight": "600" },
-    "contactHead": { "size": "1.50", "weight": "600" }
+    "heroHead": {
+      "size": "3.40",
+      "weight": "600"
+    },
+    "tagline": {
+      "size": "2.00",
+      "color": "#2d4a3e",
+      "weight": "600"
+    },
+    "pageTitle": {
+      "size": "2.10",
+      "color": "#2d4a3e",
+      "weight": "600"
+    },
+    "sectionHead": {
+      "size": "1.40",
+      "color": "#2d4a3e",
+      "weight": "600"
+    },
+    "itemTitle": {
+      "size": "1.35",
+      "weight": "500"
+    },
+    "body": {
+      "size": "1.00"
+    },
+    "pageSub": {
+      "size": "0.90",
+      "color": "#6b7280"
+    },
+    "navBrand": {
+      "size": "1.45"
+    },
+    "calMonth": {
+      "size": "1.50",
+      "color": "#2d4a3e",
+      "weight": "600"
+    },
+    "newsletterHead": {
+      "size": "1.50",
+      "weight": "600"
+    },
+    "contactHead": {
+      "size": "1.50",
+      "weight": "600"
+    }
   },
   "heroBgSettings": {
     "mode": "color",
@@ -101,27 +136,110 @@
     "heroPhotoUrl": ""
   },
   "heroBgPresets": [
-    { "label": "Forest Path", "url": "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80" },
-    { "label": "City Walk", "url": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600&q=80" },
-    { "label": "Park & People", "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80" },
-    { "label": "Urban Green", "url": "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=1600&q=80" },
-    { "label": "Running Trail", "url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80" },
-    { "label": "Campus Walk", "url": "https://images.unsplash.com/photo-1562774053-701939374585?w=1600&q=80" }
+    {
+      "label": "Forest Path",
+      "url": "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80"
+    },
+    {
+      "label": "City Walk",
+      "url": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600&q=80"
+    },
+    {
+      "label": "Park & People",
+      "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80"
+    },
+    {
+      "label": "Urban Green",
+      "url": "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=1600&q=80"
+    },
+    {
+      "label": "Running Trail",
+      "url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80"
+    },
+    {
+      "label": "Campus Walk",
+      "url": "https://images.unsplash.com/photo-1562774053-701939374585?w=1600&q=80"
+    }
   ],
-  "memberRoles": ["Faculty", "Post Doc", "PhD Student", "Master Student", "Undergraduate Student", "Researcher", "Visiting Scholar"],
-  "projectTags": ["Health", "Mobility", "Equity", "Urban Design", "Aging"],
-  "recTypes": ["PhD Position", "Postdoc", "RA", "Undergraduate"],
-  "newsCategories": ["Publication", "Award", "Event", "Announcement", "Conference", "Other"],
-  "departments": ["LAUP", "ARCH", "HLTH", "PHLT", "Other"],
+  "memberRoles": [
+    "Faculty",
+    "Post Doc",
+    "PhD Student",
+    "Master Student",
+    "Undergraduate Student",
+    "Researcher",
+    "Visiting Scholar"
+  ],
+  "projectTags": [
+    "Health",
+    "Mobility",
+    "Equity",
+    "Urban Design",
+    "Aging"
+  ],
+  "recTypes": [
+    "PhD Position",
+    "Postdoc",
+    "RA",
+    "Undergraduate"
+  ],
+  "newsCategories": [
+    "Publication",
+    "Award",
+    "Event",
+    "Announcement",
+    "Conference",
+    "Other"
+  ],
+  "departments": [
+    "LAUP",
+    "ARCH",
+    "HLTH",
+    "PHLT",
+    "Other"
+  ],
   "calEventTypes": [
-    { "id": "meeting", "label": "Lab Meeting", "color": "#16a34a", "bg": "#dcfce7", "text": "#166534" },
-    { "id": "deadline", "label": "Recruiting", "color": "#991b1b", "bg": "#fee2e2", "text": "#991b1b" },
-    { "id": "seminar", "label": "Seminar", "color": "#92400e", "bg": "#fef3c7", "text": "#92400e" },
-    { "id": "event", "label": "Event", "color": "#1e40af", "bg": "#dbeafe", "text": "#1e40af" },
-    { "id": "conference", "label": "Conference", "color": "#7c3aed", "bg": "#ebe1fc", "text": "#7c3aed" }
+    {
+      "id": "meeting",
+      "label": "Lab Meeting",
+      "color": "#16a34a",
+      "bg": "#dcfce7",
+      "text": "#166534"
+    },
+    {
+      "id": "deadline",
+      "label": "Recruiting",
+      "color": "#991b1b",
+      "bg": "#fee2e2",
+      "text": "#991b1b"
+    },
+    {
+      "id": "seminar",
+      "label": "Seminar",
+      "color": "#92400e",
+      "bg": "#fef3c7",
+      "text": "#92400e"
+    },
+    {
+      "id": "event",
+      "label": "Event",
+      "color": "#1e40af",
+      "bg": "#dbeafe",
+      "text": "#1e40af"
+    },
+    {
+      "id": "conference",
+      "label": "Conference",
+      "color": "#7c3aed",
+      "bg": "#ebe1fc",
+      "text": "#7c3aed"
+    }
   ],
   "scholarUrl": "https://scholar.google.com/citations?user=B-H2Wq0AAAAJ&hl=en&oi=ao",
-  "hiddenTabs": ["collab", "analytics"],
+  "hiddenTabs": [
+    "collab",
+    "analytics"
+  ],
   "heroVisible": false,
   "pageTitles": {}
 }
