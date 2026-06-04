@@ -2140,8 +2140,8 @@ async function saveToGitHub() {
   }
   showSaving();
   try {
-    const results = await Promise.all([
-      ghSave('settings.json', {
+    const filesToSave = [
+      ['settings.json', {
         about: D.about, aboutPhotos: D.aboutPhotos, footer: D.footer,
         theme: D.theme, typography: D.typography,
         heroBgSettings: D.heroBgSettings, heroBgPresets: D.heroBgPresets,
@@ -2150,22 +2150,28 @@ async function saveToGitHub() {
         departments: D.departments, calEventTypes: D.calEventTypes,
         scholarUrl: D.scholarUrl, hiddenTabs: D.hiddenTabs,
         heroVisible: D.heroVisible, pageTitles: D.pageTitles
-      }, 'Update settings'),
-      ghSave('members.json',      D.members      || [], 'Update members'),
-      ghSave('projects.json',     D.projects     || [], 'Update projects'),
-      ghSave('news.json',         D.news         || [], 'Update news'),
-      ghSave('events.json',       D.events       || [], 'Update events'),
-      ghSave('publications.json', D.publications || [], 'Update publications'),
-      ghSave('recruiting.json',   D.recruiting   || [], 'Update recruiting'),
-      ghSave('resources.json',    D.resources    || [], 'Update resources'),
-    ]);
-    if (results.every(Boolean)) {
-      showSaved();
-      try { localStorage.setItem('dral_data', JSON.stringify(D)); } catch(e) {}
-      return true;
+      }, 'Update settings'],
+      ['members.json',      D.members      || [], 'Update members'],
+      ['projects.json',     D.projects     || [], 'Update projects'],
+      ['news.json',         D.news         || [], 'Update news'],
+      ['events.json',       D.events       || [], 'Update events'],
+      ['publications.json', D.publications || [], 'Update publications'],
+      ['recruiting.json',   D.recruiting   || [], 'Update recruiting'],
+      ['resources.json',    D.resources    || [], 'Update resources'],
+    ];
+
+    for (const [filename, data, message] of filesToSave) {
+      const ok = await ghSave(filename, data, message);
+      if (!ok) {
+        showSaveFailed();
+        return false;
+      }
+      await new Promise(r => setTimeout(r, 250));
     }
-    showSaveFailed();
-    return false;
+
+    showSaved();
+    try { localStorage.setItem('dral_data', JSON.stringify(D)); } catch(e) {}
+    return true;
   } catch(e) {
     console.error('Save error:', e);
     showSaveFailed();
