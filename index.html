@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,8 +8,6 @@
 <meta name="robots" content="index, follow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
-
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js" async></script>
 
 <style>
 /* ═══════════════════════════ TOKENS ═══════════════════════════ */
@@ -649,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function(){
     oninput="GH.token=this.value" autocomplete="off">
   <button onclick="testGHToken()" style="background:#059669;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:.78rem;cursor:pointer">Test</button>
   <span id="gh-pat-status"></span>
-  <span style="opacity:.65;font-size:.72rem">PAT needs <strong>Contents: read+write</strong> on dral-research/dral-research.github.io</span>
+  <span style="opacity:.65;font-size:.72rem">PAT needs <strong>Contents: read+write</strong> on dral-research/webpage</span>
 </div>
 
 
@@ -755,36 +753,26 @@ document.addEventListener('DOMContentLoaded', function(){
   <div class="newsletter-box" id="newsletterBox">
     <div style="flex:1">
       <h3>Stay Updated</h3>
-      <p>Get notified about new publications, events, and lab announcements.</p>
-      <!-- Subscribe form (hidden once subscribed) -->
+      <p>Send a subscription request to the lab, or follow public updates through GitHub and LinkedIn.</p>
       <div id="nlSubscribeForm">
         <div class="newsletter-form">
           <input id="newsletterEmail" class="newsletter-input" type="email" placeholder="your@email.com">
-          <button class="newsletter-btn" onclick="subscribeNewsletter()">Subscribe</button>
+          <button class="newsletter-btn" onclick="subscribeNewsletter()">Request Updates</button>
         </div>
-        <div class="newsletter-success" id="newsletterSuccess">✓ You're subscribed! We'll be in touch.</div>
+        <div class="newsletter-success" id="newsletterSuccess">Your email app is opening with a subscription request.</div>
       </div>
-      <!-- Unsubscribe form -->
-      <div id="nlUnsubscribeForm" style="display:none;margin-top:10px">
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input id="unsubscribeEmail" class="newsletter-input" type="email" placeholder="your@email.com">
-          <button class="newsletter-btn" style="background:rgba(255,255,255,.25)" onclick="unsubscribeNewsletter()">Unsubscribe</button>
-          <button onclick="toggleUnsubForm(false)" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.82rem;cursor:pointer;padding:6px">← Back</button>
-        </div>
-        <div class="newsletter-success" id="unsubscribeSuccess" style="display:none">✓ You've been unsubscribed.</div>
-      </div>
-      <button onclick="toggleUnsubForm(true)" id="nlUnsubBtn" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.74rem;cursor:pointer;margin-top:8px;padding:0;text-decoration:underline">Unsubscribe</button>
+      <div id="nlUnsubscribeForm" style="display:none;margin-top:10px"></div>
+      <button onclick="unsubscribeNewsletter()" id="nlUnsubBtn" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.74rem;cursor:pointer;margin-top:8px;padding:0;text-decoration:underline">Unsubscribe by email</button>
     </div>
     <!-- Admin panel: only visible in admin mode -->
     <div id="newsletterAdminStats" style="display:none;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0">
       <div style="display:flex;align-items:baseline;gap:6px">
-        <div style="font-size:2.2rem;font-weight:700;font-family:'Cormorant Garamond',serif" id="subCount">0</div>
-        <div style="font-size:.82rem;opacity:.8">Subscribers</div>
+        <div style="font-size:2.2rem;font-weight:700;font-family:'Cormorant Garamond',serif" id="subCount">-</div>
+        <div style="font-size:.82rem;opacity:.8">GitHub-only mode</div>
       </div>
       <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
-        <button onclick="openSubscriberManager()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:7px;font-size:.78rem;cursor:pointer">👥 Manage</button>
-        <button onclick="openNewsletterComposer()" style="background:var(--gold);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-size:.78rem;cursor:pointer;font-weight:500">✉ Generate &amp; Send</button>
-        <button onclick="exportSubscribers()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 13px;border-radius:7px;font-size:.75rem;cursor:pointer">📥 Export CSV</button>
+        <button onclick="openNewsletterComposer()" style="background:var(--gold);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-size:.78rem;cursor:pointer;font-weight:500">✉ Generate Copy</button>
+        
       </div>
     </div>
   </div>
@@ -1915,10 +1903,10 @@ const ORCID_MAP = {
 
 /* ══════════════════════════════════════════════════
    GITHUB API — data saved as JSON files in repository
-   Repo: dral-research/dral-research.github.io
+   Repo: dral-research/webpage
 ══════════════════════════════════════════════════ */
 const GH = {
-  repo:   'dral-research/dral-research.github.io',
+  repo:   'dral-research/webpage',
   branch: 'main',
   get token() { return localStorage.getItem('gh_pat') || ''; },
   set token(v) { localStorage.setItem('gh_pat', v); }
@@ -1980,7 +1968,12 @@ async function testGHToken() {
 /* ══════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════ */
-let D = null;
+let D = {
+  about:{}, aboutPhotos:[], footer:{}, theme:{}, typography:{},
+  heroBgSettings:{}, heroBgPresets:[], memberRoles:[], projectTags:[], recTypes:[],
+  newsCategories:[], departments:[], calEventTypes:{}, hiddenTabs:[], pageTitles:{},
+  members:[], projects:[], news:[], events:[], publications:[], recruiting:[], resources:[]
+};
 let isAdmin = false;
 let mFilter='all', pFilter='all', rFilter='all', pStatusF='all', pPeriodF='all';
 let _viewMemberId = null;
@@ -2067,9 +2060,20 @@ async function loadFromGitHub() {
     }
     // Fetch all JSON data files in parallel
     const names = ['settings','members','projects','news','events','publications','recruiting','resources'];
-    const results = await Promise.allSettled(
-      names.map(n => fetch(`./data/${n}.json?_=${Date.now()}`).then(r => { if(!r.ok) throw n; return r.json(); }))
-    );
+    const cacheBust = Date.now();
+    const loadJson = async (name) => {
+      const candidates = [`./data/${name}.json?_=${cacheBust}`, `./${name}.json?_=${cacheBust}`];
+      let lastError = null;
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url);
+          if (r.ok) return r.json();
+          lastError = new Error(`${name}: ${r.status}`);
+        } catch (e) { lastError = e; }
+      }
+      throw lastError || new Error(`Could not load ${name}.json`);
+    };
+    const results = await Promise.allSettled(names.map(loadJson));
     const [settings, members, projects, news, events, publications, recruiting, resources] = results;
     if (settings.status    === 'fulfilled') Object.assign(D, settings.value);
     if (members.status     === 'fulfilled') D.members      = members.value;
@@ -2087,13 +2091,11 @@ async function loadFromGitHub() {
 }
 
 /**
- * Recursively remove undefined values from an object so Firestore never
- * receives an "Unsupported field value: undefined" error.
- * JSON round-trip is the safest approach — undefined values are dropped.
+ * Recursively remove undefined values before saving JSON data.
  */
-function cleanForFirestore(obj) {
+function cleanForJson(obj) {
   try { return JSON.parse(JSON.stringify(obj)); }
-  catch(e) { console.error('cleanForFirestore error:', e); return obj; }
+  catch(e) { console.error('cleanForJson error:', e); return obj; }
 }
 
 async function saveToGitHub() {
@@ -2131,7 +2133,7 @@ async function saveToGitHub() {
 
 /**
  * Returns a copy of the data object with base64 images replaced by a placeholder.
- * This prevents Firestore 1MB document limit errors.
+ * This prevents oversized JSON commits and slow page loads.
  * Images that are already URLs (starting with http) are kept as-is.
  */
 const FIRESTORE_MAX_BASE64 = 400000; // ~300KB image — safe limit per base64 string
@@ -2711,14 +2713,8 @@ function openMemberForm(id=null){
  * Falls back to base64 if Storage is not available.
  */
 /* ══════════════════════════════════════════════════
-   CLOUDINARY UPLOAD (free, no server needed)
-   Setup: create free account at cloudinary.com,
-   then go to Settings → Upload → Upload presets → Add preset
-   Set preset to "unsigned", copy Cloud Name + Preset name below.
+   GITHUB-ONLY IMAGE HANDLING
 ══════════════════════════════════════════════════ */
-const CLOUDINARY_CLOUD = 'dral-lab'; // ← replace with your Cloud Name
-const CLOUDINARY_PRESET = 'dral_unsigned'; // ← replace with your Upload Preset
-
 async function uploadImageToStorage(file, folder='uploads', maxW=1200, maxH=1000, quality=0.85){
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -2731,38 +2727,21 @@ async function uploadImageToStorage(file, folder='uploads', maxW=1200, maxH=1000
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-
-        canvas.toBlob(async blob => {
-          // Try Cloudinary first (recommended — free, reliable, permanent URLs)
-          try{
-            const formData = new FormData();
-            formData.append('file', blob, 'image.jpg');
-            formData.append('upload_preset', CLOUDINARY_PRESET);
-            formData.append('folder', 'dral-lab/'+folder);
-            const resp = await fetch(
-              `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
-              { method: 'POST', body: formData }
-            );
-            if(resp.ok){
-              const data = await resp.json();
-              if(data.secure_url){
-                resolve(data.secure_url);
-                return;
-              }
-            }
-          }catch(cloudErr){
-            console.warn('Cloudinary upload failed:', cloudErr.message);
-          }
-
-          // Image URL used directly (no server-side storage)
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        if(dataUrl.length > 450000){
+          alert('This image is too large for GitHub-only inline storage. Please upload it to GitHub, Google Drive, or another public location and paste the URL instead.');
+          resolve(null);
+          return;
+        }
+        resolve(dataUrl);
       };
       img.onerror = () => resolve(null);
       img.src = e.target.result;
     };
+    reader.onerror = () => resolve(null);
     reader.readAsDataURL(file);
   });
 }
-
 // Legacy sync wrapper kept for any remaining callers
 function compressImage(file, maxW, maxH, quality, callback){
   uploadImageToStorage(file, 'uploads', maxW, maxH, quality).then(callback);
@@ -6198,152 +6177,54 @@ function initVisitorCounter(){
 /* ══════════════════════════════════════════════════
    EMAIL NEWSLETTER (Firebase Realtime DB)
 ══════════════════════════════════════════════════ */
+function getLabContactEmail(){
+  return D?.about?.contact || D?.footer?.email || 'chanam@tamu.edu';
+}
+function openMailRequest(subject, body){
+  const to = getLabContactEmail();
+  window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
 async function subscribeNewsletter(){
   const emailInput = document.getElementById('newsletterEmail');
   const email = emailInput?.value?.trim() || '';
   if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
-  const subs = JSON.parse(localStorage.getItem('dral_subscribers') || '[]');
-  if (subs.find(s => s.email === email && s.active !== false)) {
-    alert('This email is already subscribed.'); return;
-  }
-  const existing = subs.findIndex(s => s.email === email);
-  if (existing > -1) { subs[existing].active = true; subs[existing].unsubscribedAt = null; }
-  else subs.push({ email, subscribedAt: new Date().toISOString(), active: true });
-  localStorage.setItem('dral_subscribers', JSON.stringify(subs));
+  const labName = D?.footer?.line1 || 'DrAL Lab';
+  openMailRequest(
+    `${labName} newsletter subscription request`,
+    `Please add ${email} to the ${labName} update list.\n\nRequested from: ${location.href}`
+  );
   if (emailInput) emailInput.value = '';
   const success = document.getElementById('newsletterSuccess');
-  if (success) { success.style.display = 'block'; setTimeout(() => success.style.display = 'none', 4000); }
-  if (_emailjsReady && EMAILJS_SERVICE_ID !== 'YOUR_SERVICE_ID') {
-    try {
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-        to_email: email,
-        subject: 'DrAL Lab Newsletter Subscription Confirmed',
-        body: 'Thank you for subscribing to the DrAL Lab newsletter!',
-        lab_name: D?.footer?.line1 || 'DrAL Lab',
-        lab_url: window.location.origin,
-      });
-    } catch(e) { console.warn('Confirmation email failed:', e); }
-  }
-  loadSubscriberCount();
+  if (success) { success.style.display = 'block'; setTimeout(() => success.style.display = 'none', 5000); }
 }
-
 function loadSubscriberCount(){
-  const subs = JSON.parse(localStorage.getItem('dral_subscribers') || '[]');
-  const count = subs.filter(s => s.active !== false).length;
   const el = document.getElementById('subscriberCount');
-  if (el) el.textContent = count;
+  if (el) el.textContent = '-';
+  const subCount = document.getElementById('subCount');
+  if (subCount) subCount.textContent = '-';
 }
-
 function syncNewsletterAdminVisibility(){
   const stats=document.getElementById('newsletterAdminStats');
   const unsubBtn=document.getElementById('nlUnsubBtn');
   if(stats) stats.style.display=isAdmin?'flex':'none';
-  // Hide unsubscribe button for admin (they manage via the manager)
-  if(unsubBtn) unsubBtn.style.display=isAdmin?'none':'';
+  if(unsubBtn) unsubBtn.style.display='';
 }
-
-function toggleUnsubForm(show){
-  document.getElementById('nlSubscribeForm').style.display=show?'none':'';
-  document.getElementById('nlUnsubscribeForm').style.display=show?'':'none';
-  document.getElementById('nlUnsubBtn').style.display=show?'none':'';
-  if(show) document.getElementById('unsubscribeEmail').focus();
-}
-
+function toggleUnsubForm(){ unsubscribeNewsletter(); }
 async function unsubscribeNewsletter(){
-  const email=document.getElementById('unsubscribeEmail').value.trim();
-  if(!email||!email.includes('@')){ alert('Please enter a valid email address.'); return; }
-  const btn=document.querySelector('#nlUnsubscribeForm button');
-  if(btn){ btn.disabled=true; btn.textContent='Removing…'; }
-    const _sl = JSON.parse(localStorage.getItem('dral_subscribers')||'[]');
-    const _si = _sl.findIndex(s => s.email === email);
-    if (_si > -1) { _sl[_si].active = false; _sl[_si].unsubscribedAt = new Date().toISOString(); }
-    localStorage.setItem('dral_subscribers', JSON.stringify(_sl));
-  }catch(e){ console.error(e); alert('Error. Please try again.'); }
-  const subs = JSON.parse(localStorage.getItem('dral_subscribers')||'[]');
-  const rows = ['Email,Subscribed At,Active,Unsubscribed At'];
-  subs.forEach(s => {
-    rows.push([s.email||'',s.subscribedAt||'',s.active!==false?'yes':'no',s.unsubscribedAt||''].join(','));
-  });
-  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='dral_subscribers.csv'; a.click();
+  openMailRequest(
+    'DrAL Lab newsletter unsubscribe request',
+    'Please remove this address from the DrAL Lab update list.\n\nEmail to remove: '
+  );
 }
-  // (localStorage-based)
-  const _nsubs = JSON.parse(localStorage.getItem('dral_subscribers')||'[]');
-  const snap = { forEach: (cb) => _nsubs.forEach(s => cb({ val: () => s, key: (s.email||'').replace(/\./g,',') })), numChildren: () => _nsubs.length };
-  const rows=['Email,Subscribed At,Active,Unsubscribed At'];
-  snap.forEach(child=>{
-    const d=child.val?.() || child;
-    rows.push([d.email||'',d.subscribedAt||'',d.active?'yes':'no',d.unsubscribedAt||''].join(','));
-  });
-  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='dral-newsletter-subscribers.csv';
-  // (localStorage-based)
+function exportSubscribers(){
+  alert('Subscriber export is disabled in GitHub-only mode. Keep subscriber emails in a private mailing list, not in the public website repository.');
 }
-
-/* ── Subscriber Manager (Admin) ── */
-async function openSubscriberManager(){
-  // (localStorage-based)
-  document.getElementById('addSubEmail').value='';
-  await renderSubscriberList();
-  openModal('subscriberManagerModal');
-}
-
-async function renderSubscriberList(){
-  const _nsubs = JSON.parse(localStorage.getItem('dral_subscribers')||'[]');
-  const snap = { forEach: (cb) => _nsubs.forEach(s => cb({ val: () => s, key: (s.email||'').replace(/\./g,',') })), numChildren: () => _nsubs.length };
-  const list=document.getElementById('subscriberList');
-  if(!list) return;
-  const items=[];
-  snap.forEach(child=>{ items.push({key:child.key,...child.val()}); });
-  items.sort((a,b)=>new Date(b.subscribedAt||0)-new Date(a.subscribedAt||0));
-  if(!items.length){
-    list.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)">No subscribers yet.</div>';
-    return;
-  }
-  list.innerHTML=items.map(sub=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:var(--bg);${!sub.active?'opacity:.55':''}">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:.88rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sub.email||sub.key.replace(/,/g,'.')}</div>
-        <div style="font-size:.72rem;color:var(--muted)">${sub.subscribedAt?new Date(sub.subscribedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'?'} · ${sub.active?'<span style="color:var(--green)">Active</span>':'<span style="color:#dc2626">Unsubscribed</span>'}</div>
-      </div>
-      ${sub.active
-        ? `<button onclick="adminRemoveSubscriber('${sub.key}')" style="background:none;border:1px solid #dc2626;color:#dc2626;padding:4px 10px;border-radius:6px;font-size:.74rem;cursor:pointer;flex-shrink:0">Remove</button>`
-        : `<button onclick="adminReactivateSubscriber('${sub.key}')" style="background:none;border:1px solid var(--green);color:var(--green);padding:4px 10px;border-radius:6px;font-size:.74rem;cursor:pointer;flex-shrink:0">Re-add</button>`
-      }
-      <button onclick="adminDeleteSubscriber('${sub.key}')" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 6px;flex-shrink:0" title="Permanently delete">×</button>
-    </div>`).join('');
-}
-
-async function adminAddSubscriber(){
-  const email=document.getElementById('addSubEmail').value.trim();
-  if(!email||!email.includes('@')){ alert('Enter a valid email.'); return; }
-  const key=email.replace(/\./g,',');
-  document.getElementById('addSubEmail').value='';
-  renderSubscriberList();
-  // Refresh count
-  const el=document.getElementById('subCount');
-  if(el) el.textContent=parseInt(el.textContent||'0')+1;
-}
-
-async function adminRemoveSubscriber(key){
-  renderSubscriberList();
-}
-
-async function adminReactivateSubscriber(key){
-  renderSubscriberList();
-}
-
-async function adminDeleteSubscriber(key){
-  if(!confirm('Permanently delete this subscriber? This cannot be undone.')) return;
-  renderSubscriberList();
-}
-
-/* ══════════════════════════════════════════════════
-   CHANGELOG
-══════════════════════════════════════════════════ */
+async function openSubscriberManager(){ exportSubscribers(); }
+async function renderSubscriberList(){ }
+async function adminAddSubscriber(){ exportSubscribers(); }
+async function adminRemoveSubscriber(){ exportSubscribers(); }
+async function adminReactivateSubscriber(){ exportSubscribers(); }
+async function adminDeleteSubscriber(){ exportSubscribers(); }
 const CHANGELOG_KEY = 'dral-changelog';
 function logChange(action, detail=''){
   try{
@@ -6610,297 +6491,87 @@ function showToast(msg){
 }
 
 /* ══════════════════════════════════════════════════
-   EMAILJS NEWSLETTER
-   Setup: emailjs.com → free account → add Gmail service
-   → create template → paste IDs below
+   NEWSLETTER COMPOSER (GITHUB-ONLY MODE)
 ══════════════════════════════════════════════════ */
-const EMAILJS_SERVICE_ID  = 'service_8zu5r2d';   // ← from EmailJS dashboard
-const EMAILJS_TEMPLATE_ID = 'template_hasufo5';  // ← subscription confirm template
-const EMAILJS_PUBLIC_KEY  = 'E5JAgM2sPMBm3nWMZ';   // ← from Account → API Keys
-// Newsletter template (can be same as above or a dedicated one):
-// const EMAILJS_NL_TEMPLATE_ID is declared below — it uses EMAILJS_TEMPLATE_ID as fallback
-
 let _emailjsReady = false;
-function initEmailJS(){
-  try{
-    if(typeof emailjs!=='undefined'&&EMAILJS_PUBLIC_KEY!=='YOUR_PUBLIC_KEY'){
-      emailjs.init(EMAILJS_PUBLIC_KEY);
-      _emailjsReady=true;
-    }
-  }catch(e){ console.warn('EmailJS init failed:', e); }
-}
-
-// Override subscribeNewsletter to also send confirmation email via EmailJS
-    alert('Subscription failed. Please try again.'); console.error(e);
-    if(btn){ btn.disabled=false; btn.textContent='Subscribe'; }
-  }
-}
-
-
-/* ══════════════════════════════════════════════════
-   MONTHLY NEWSLETTER COMPOSER + SENDER
-══════════════════════════════════════════════════ */
-
-// A separate EmailJS template for newsletters (can reuse EMAILJS_TEMPLATE_ID
-// but you can also create a dedicated "newsletter" template)
-const EMAILJS_NL_TEMPLATE_ID = 'template_hasufo5'; // same template for newsletter // template with {{subject}} {{body}} {{to_email}}
-
-const NL_MONTHS = ['January','February','March','April','May','June',
-                   'July','August','September','October','November','December'];
-
+function initEmailJS(){ _emailjsReady = false; }
+const NL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 function openNewsletterComposer(){
-  // Populate month/year selectors
   const now = new Date();
   const monthSel = document.getElementById('nlMonth');
   const yearSel  = document.getElementById('nlYear');
-  monthSel.innerHTML = NL_MONTHS.map((m,i)=>
-    `<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('');
+  if(monthSel) monthSel.innerHTML = NL_MONTHS.map((m,i)=>`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`).join('');
   const curY = now.getFullYear();
-  yearSel.innerHTML = [curY-1, curY, curY+1].map(y=>
-    `<option value="${y}"${y===curY?' selected':''}>${y}</option>`).join('');
-
-  document.getElementById('nlSubject').value =
-    `DrAL Lab Monthly Update — ${NL_MONTHS[now.getMonth()]} ${curY}`;
-  document.getElementById('nlBody').value = '';
-  document.getElementById('nlPreviewFrame').innerHTML = '';
-  document.getElementById('nlGenStatus').textContent = '';
-  document.getElementById('nlSendProgress').style.display = 'none';
+  if(yearSel) yearSel.innerHTML = [curY-1, curY, curY+1].map(y=>`<option value="${y}"${y===curY?' selected':''}>${y}</option>`).join('');
+  const subject = document.getElementById('nlSubject');
+  if(subject) subject.value = `DrAL Lab Monthly Update - ${NL_MONTHS[now.getMonth()]} ${curY}`;
+  const body = document.getElementById('nlBody');
+  if(body) body.value = '';
+  const status = document.getElementById('nlGenStatus');
+  if(status) status.textContent = 'GitHub-only mode: generate copy, then send with your lab email client.';
+  const progress = document.getElementById('nlSendProgress');
+  if(progress) progress.style.display = 'none';
   nlSetTab('edit');
-  _updateNlSendInfo();
   openModal('newsletterComposerModal');
 }
-
 function nlSetTab(tab){
-  const editEl   = document.getElementById('nlBody');
-  const prevEl   = document.getElementById('nlPreviewFrame');
-  const tabEdit  = document.getElementById('nlTabEdit');
-  const tabPrev  = document.getElementById('nlTabPreview');
+  const editEl = document.getElementById('nlBody');
+  const prevEl = document.getElementById('nlPreviewFrame');
+  const tabEdit = document.getElementById('nlTabEdit');
+  const tabPrev = document.getElementById('nlTabPreview');
+  if(!editEl || !prevEl) return;
   if(tab === 'preview'){
-    prevEl.innerHTML = editEl.value;
+    prevEl.innerHTML = `<pre style="white-space:pre-wrap;font-family:inherit;line-height:1.6">${escapeHtml(editEl.value)}</pre>`;
     prevEl.style.display = 'block'; editEl.style.display = 'none';
-    tabPrev.style.background = 'var(--green)'; tabPrev.style.color = '#fff';
-    tabEdit.style.background = 'var(--white)'; tabEdit.style.color = 'var(--text)';
+    if(tabPrev){ tabPrev.style.background = 'var(--green)'; tabPrev.style.color = '#fff'; }
+    if(tabEdit){ tabEdit.style.background = 'var(--white)'; tabEdit.style.color = 'var(--text)'; }
   } else {
     prevEl.style.display = 'none'; editEl.style.display = 'block';
-    tabEdit.style.background = 'var(--green)'; tabEdit.style.color = '#fff';
-  const subs = JSON.parse(localStorage.getItem('dral_subscribers') || '[]');
-  const count = subs.filter(s => s.active !== false).length;
-    `${count} subscriber${count!==1?'s':''} will receive this email.`;
-
-
+    if(tabEdit){ tabEdit.style.background = 'var(--green)'; tabEdit.style.color = '#fff'; }
+    if(tabPrev){ tabPrev.style.background = 'var(--white)'; tabPrev.style.color = 'var(--text)'; }
+  }
+}
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
 function generateNewsletter(){
-  const month = parseInt(document.getElementById('nlMonth').value);
-  const year  = parseInt(document.getElementById('nlYear').value);
-  const status = document.getElementById('nlGenStatus');
-  status.textContent = 'Generating…';
-
-  // Date range for the selected month
+  const month = parseInt(document.getElementById('nlMonth')?.value || new Date().getMonth());
+  const year  = parseInt(document.getElementById('nlYear')?.value || new Date().getFullYear());
   const startDate = `${year}-${String(month+1).padStart(2,'0')}-01`;
-  const endDate   = `${year}-${String(month+1).padStart(2,'0')}-31`;
+  const endDate = `${year}-${String(month+1).padStart(2,'0')}-31`;
   const monthLabel = `${NL_MONTHS[month]} ${year}`;
-  const labName = D?.footer?.line1 || 'DrAL Lab';
-  const siteUrl = window.location.origin + window.location.pathname;
-
-  // Collect this month's data
-  // Current month + next month date range for events
-  const nextMonthNum  = (month + 1) % 12;
-  const nextMonthYear = month === 11 ? year + 1 : year;
-  const nextMonthStart = `${nextMonthYear}-${String(nextMonthNum+1).padStart(2,'0')}-01`;
-  const nextMonthEnd   = `${nextMonthYear}-${String(nextMonthNum+1).padStart(2,'0')}-31`;
-  const nextMonthLabel = `${NL_MONTHS[nextMonthNum]} ${nextMonthYear}`;
-  const twoMonthLabel  = `${NL_MONTHS[month]} – ${NL_MONTHS[nextMonthNum]} ${nextMonthYear}`;
-
-  const monthNews = (D.news||[]).filter(n => n.date >= startDate && n.date <= endDate)
-    .sort((a,b) => new Date(b.date) - new Date(a.date));
-  const monthPubs = (D.publications||[]).filter(p => String(p.year) === String(year))
-    .slice(0, 5);
-  // Current month + next month events
-  const upcomingEvents = (D.events||[])
-    .filter(e => e.date >= startDate && e.date <= nextMonthEnd)
-    .sort((a,b) => a.date.localeCompare(b.date));
+  const monthNews = (D.news||[]).filter(n => n.date >= startDate && n.date <= endDate).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const upcomingEvents = (D.events||[]).filter(e => e.date >= startDate).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).slice(0,6);
   const openPositions = (D.recruiting||[]).filter(r => r.status === 'Open');
-
-  // ── Build HTML email ──────────────────────────────────────────────────────
-  const _cs = getComputedStyle(document.documentElement);
-  const green = (_cs.getPropertyValue('--green')||'#2d4a3e').trim();
-  const gold  = (_cs.getPropertyValue('--gold') ||'#b8873f').trim();
-  const bg    = (_cs.getPropertyValue('--bg')   ||'#f5f2ec').trim();
-  const headingFont = (_cs.getPropertyValue('--tp-heading-font')||"'Cormorant Garamond',serif").trim();
-
-  let html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:${bg};font-family:Georgia,'Times New Roman',serif;color:#222">
-
-<!-- Header -->
-<div style="background:${green};padding:32px 40px;text-align:center">
-  <div style="font-family:${headingFont};font-size:2rem;font-weight:700;color:#fff;letter-spacing:.02em">
-    Dr<span style="color:#a5d4c4">AL</span> Lab
-  </div>
-  <div style="color:rgba(255,255,255,.75);font-size:.9rem;margin-top:6px">Monthly Update — ${monthLabel}</div>
-</div>
-
-<!-- Intro -->
-<div style="max-width:640px;margin:32px auto;padding:0 24px">
-  <p style="font-size:1rem;line-height:1.7;color:#444">
-    Here's what's been happening at <strong>${labName}</strong> this month.
-    Visit our <a href="${siteUrl}" style="color:${green}">website</a> for the full picture.
-  </p>
-  <hr style="border:none;border-top:2px solid ${gold};width:40px;margin:24px 0">
-`;
-
-  // ── News ──────────────────────────────────────────────────────────────────
-  if(monthNews.length){
-    html += `<h2 style="font-size:1.4rem;color:${green};margin-bottom:8px">📰 Lab News</h2>`;
-    html += monthNews.map(n => `
-  <a href="${siteUrl}?page=news" style="text-decoration:none;display:block">
-    <div style="background:#fff;border-radius:10px;padding:18px 22px;margin-bottom:14px;border-left:4px solid ${gold};transition:box-shadow .2s;cursor:pointer">
-      <div style="font-weight:700;font-size:1rem;margin-bottom:5px;color:#222">${n.title}</div>
-      <div style="font-size:.8rem;color:#888;margin-bottom:8px">${n.category} · ${n.date}</div>
-      <div style="font-size:.88rem;color:#555;line-height:1.6">${(n.content||'').slice(0,200)}${(n.content||'').length>200?'…':''}</div>
-      <div style="margin-top:8px;font-size:.76rem;color:${green};font-weight:500">Read more →</div>
-    </div>
-  </a>`).join('');
-    html += `<hr style="border:none;border-top:1px solid #ddd;margin:24px 0">`;
-  }
-
-  // ── Publications ─────────────────────────────────────────────────────────
-  if(monthPubs.length){
-    html += `<h2 style="font-size:1.4rem;color:${green};margin-bottom:8px">📄 Recent Publications</h2>`;
-    html += monthPubs.map(p => `
-  <a href="${p.doi||siteUrl+'?page=publications'}" target="_blank" style="text-decoration:none;display:block">
-    <div style="background:#fff;border-radius:10px;padding:14px 20px;margin-bottom:10px;cursor:pointer">
-      <div style="font-weight:600;font-size:.92rem;margin-bottom:4px;color:#222">${p.title}</div>
-      <div style="font-size:.78rem;color:#888;margin-bottom:6px">${(p.authors||'').replace(/<[^>]*>/g,'').slice(0,100)} · ${p.year||''}</div>
-      <div style="font-size:.76rem;color:${green};font-weight:500">${p.doi ? '🔗 View Paper →' : '→ All Publications'}</div>
-    </div>
-  </a>`).join('');
-    html += `<hr style="border:none;border-top:1px solid #ddd;margin:24px 0">`;
-  }
-
-  // ── Upcoming Events (next month only) ────────────────────────────────────
-  if(upcomingEvents.length){
-    html += `<h2 style="font-size:1.4rem;color:${green};margin-bottom:4px">📅 Events — ${twoMonthLabel}</h2>`;
-    html += `<p style="font-size:.8rem;color:#888;margin-top:0;margin-bottom:12px">Upcoming events at DrAL Lab</p>`;
-    html += upcomingEvents.map(e => `
-  <a href="${siteUrl}?page=calendar" style="text-decoration:none;display:block">
-    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:12px;background:#fff;border-radius:10px;padding:12px 16px;cursor:pointer">
-      <div style="min-width:52px;background:${green};color:#fff;border-radius:8px;padding:8px;text-align:center;flex-shrink:0">
-        <div style="font-size:.65rem;text-transform:uppercase;opacity:.8">${NL_MONTHS[parseInt(e.date.slice(5,7))-1].slice(0,3)}</div>
-        <div style="font-size:1.4rem;font-weight:700;line-height:1">${parseInt(e.date.slice(8,10))}</div>
-      </div>
-      <div style="flex:1">
-        <div style="font-weight:600;font-size:.9rem;color:#222">${e.title}</div>
-        <div style="font-size:.78rem;color:#888;margin-top:2px">${e.type||''}${e.time?' · '+e.time:''}${e.building?' · '+e.building:''}</div>
-        ${e.desc?`<div style="font-size:.78rem;color:#666;margin-top:4px">${e.desc.slice(0,100)}${e.desc.length>100?'…':''}</div>`:''}
-      </div>
-    </div>
-  </a>`).join('');
-    html += `<hr style="border:none;border-top:1px solid #ddd;margin:24px 0">`;
-  }
-
-  // ── Open Positions ────────────────────────────────────────────────────────
-  if(openPositions.length){
-    html += `<h2 style="font-size:1.4rem;color:${green};margin-bottom:8px">🔍 Open Positions</h2>`;
-    html += openPositions.map(r => `
-  <a href="${r.link||siteUrl+'?page=recruiting'}" target="_blank" style="text-decoration:none;display:block">
-    <div style="background:#fff;border-radius:10px;padding:12px 18px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer">
-      <div>
-        <div style="font-weight:600;font-size:.88rem;color:#222">${r.title}</div>
-        <div style="font-size:.75rem;color:#888">${r.type||''}${r.deadline?' · Deadline: '+r.deadline:''}</div>
-      </div>
-      <div style="background:${gold};color:#fff;padding:5px 12px;border-radius:6px;font-size:.76rem;white-space:nowrap;flex-shrink:0">Apply →</div>
-    </div>
-  </a>`).join('');
-    html += `<hr style="border:none;border-top:1px solid #ddd;margin:24px 0">`;
-  }
-
-  // ── Footer ────────────────────────────────────────────────────────────────
-  html += `
-  <div style="text-align:center;padding:24px 0 8px;color:#999;font-size:.78rem">
-    <a href="${siteUrl}" style="color:${green};font-weight:600">${labName}</a><br>
-    <span>${D?.footer?.line2||''}</span><br><br>
-    You are receiving this because you subscribed at <a href="${siteUrl}" style="color:${green}">${siteUrl}</a>.<br>
-    <a href="${siteUrl}?page=about" style="color:#bbb;font-size:.72rem">To unsubscribe, visit our website → About page → Unsubscribe link.</a>
-  </div>
-</div>
-</body>
-</html>`;
-
-  document.getElementById('nlBody').value = html;
+  const siteUrl = window.location.origin + window.location.pathname;
+  const lines = [
+    `DrAL Lab Monthly Update - ${monthLabel}`,
+    '',
+    `Website: ${siteUrl}`,
+    '',
+    'Lab News',
+    ...(monthNews.length ? monthNews.map(n => `- ${n.date || ''}: ${n.title || ''}`) : ['- No news items posted for this month.']),
+    '',
+    'Upcoming Events',
+    ...(upcomingEvents.length ? upcomingEvents.map(e => `- ${e.date || ''}${e.time ? ' ' + e.time : ''}: ${e.title || ''}`) : ['- No upcoming events listed.']),
+    '',
+    'Open Positions',
+    ...(openPositions.length ? openPositions.map(r => `- ${r.title || ''}${r.deadline ? ' (Deadline: ' + r.deadline + ')' : ''}`) : ['- No open positions listed.'])
+  ];
+  const body = document.getElementById('nlBody');
+  if(body) body.value = lines.join('\n');
+  const status = document.getElementById('nlGenStatus');
+  if(status) status.textContent = `Generated ${monthNews.length} news items, ${upcomingEvents.length} events, ${openPositions.length} open positions.`;
   nlSetTab('preview');
-  status.textContent = `✓ Generated — ${monthNews.length} news, ${monthPubs.length} publications, ${upcomingEvents.length} events (${NL_MONTHS[month]}–${NL_MONTHS[nextMonthNum]}), ${openPositions.length} positions`;
 }
-
-/* ── Send ──────────────────────────────────────────────────────────────────── */
-async function sendTestEmail(){
-  if(!_emailjsReady || EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID'){
-    alert('EmailJS not configured yet.\n\nAdd your Service ID, Template ID, and Public Key in the code.\nSee emailjs.com to set up a free account.');
-    return;
-  }
-  const subject = document.getElementById('nlSubject').value || 'DrAL Lab Newsletter';
-  const body    = document.getElementById('nlBody').value || '';
-  const testTo  = prompt('Send test to which email?', D?.about?.contact || '');
-  if(!testTo) return;
-  try{
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NL_TEMPLATE_ID||EMAILJS_TEMPLATE_ID, {
-      to_email: testTo,
-      subject,
-      body,
-      lab_name: D?.footer?.line1 || 'DrAL Lab',
-      lab_url: window.location.origin,
-    });
-    alert(`✓ Test email sent to ${testTo}`);
-  }catch(e){
-    alert('Send failed: ' + e.text || e.message);
-    console.error(e);
-  }
+async function copyNewsletterBody(){
+  const body = document.getElementById('nlBody')?.value || '';
+  if(!body){ alert('Generate or write newsletter copy first.'); return; }
+  try { await navigator.clipboard.writeText(body); alert('Newsletter copy copied to clipboard.'); }
+  catch(e){ alert('Copy failed. Select the text and copy it manually.'); }
 }
-
-async function sendNewsletterToAll(){
-  if(!_emailjsReady || EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID'){
-    alert('EmailJS not configured.\n\nAdd your Service ID, Template ID, and Public Key in the code.');
-    return;
-  }
-  const subject = document.getElementById('nlSubject')?.value?.trim();
-  const body    = document.getElementById('nlBody')?.value?.trim();
-  if(!subject || !body){ alert('Please fill in subject and body first.'); return; }
-
-  const subs = JSON.parse(localStorage.getItem('dral_subscribers') || '[]');
-  const subscribers = subs.filter(s => s.active !== false).map(s => s.email);
-  if(!subscribers.length){ alert('No active subscribers yet.'); return; }
-
-  if(!confirm(`Send to ${subscribers.length} subscriber${subscribers.length!==1?'s':''}?\n\nSubject: ${subject}`)) return;
-
-  const btn = document.getElementById('nlSendBtn');
-  if(btn) btn.disabled = true;
-  const progressWrap = document.getElementById('nlSendProgress');
-  const bar  = document.getElementById('nlProgressBar');
-  const text = document.getElementById('nlProgressText');
-  if(progressWrap) progressWrap.style.display = 'block';
-
-  let sent = 0, failed = 0;
-  for(const email of subscribers){
-    try{
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NL_TEMPLATE_ID || EMAILJS_TEMPLATE_ID, {
-        to_email: email, subject, body,
-        lab_name: D?.footer?.line1 || 'DrAL Lab',
-        lab_url: window.location.origin,
-      });
-      sent++;
-    } catch(e){ console.warn('Failed:', email, e); failed++; }
-    const pct = Math.round(((sent+failed)/subscribers.length)*100);
-    if(bar) bar.style.width = pct + '%';
-    if(text) text.textContent = `Sending… ${sent+failed}/${subscribers.length} (${failed} failed)`;
-    await new Promise(r => setTimeout(r, 300));
-  }
-  if(btn) btn.disabled = false;
-  if(text) text.textContent = `✓ Done — ${sent} sent, ${failed} failed`;
-  if(bar) bar.style.background = failed ? 'var(--gold)' : 'var(--green)';
-}
-
-
+async function sendTestEmail(){ copyNewsletterBody(); }
+async function sendNewsletterToAll(){ copyNewsletterBody(); }
 /* ══════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════ */
