@@ -1931,6 +1931,8 @@ async function ghApi(path, options={}){
   return res.status === 204 ? null : res.json();
 }
 
+let _ghCommitQueue = Promise.resolve();
+
 async function ghCommitFiles(files, message='Update website data'){
   if(!GH.token) return false;
   const entries = files.filter(f => f && f.filename).map(f => ({
@@ -1941,6 +1943,13 @@ async function ghCommitFiles(files, message='Update website data'){
   }));
   if(!entries.length) return true;
 
+  _ghCommitQueue = _ghCommitQueue
+    .catch(() => {})
+    .then(() => ghCommitEntries(entries, message));
+  return _ghCommitQueue;
+}
+
+async function ghCommitEntries(entries, message='Update website data'){
   for(let attempt=1; attempt<=4; attempt++){
     try{
       const ref = await ghApi(`/git/ref/heads/${encodeURIComponent(GH.branch)}`);
@@ -2006,6 +2015,7 @@ let D = {
   about:{}, aboutPhotos:[], footer:{}, theme:{}, typography:{},
   heroBgSettings:{}, heroBgPresets:[], memberRoles:[], projectTags:[], recTypes:[],
   newsCategories:[], departments:[], calEventTypes:{}, hiddenTabs:[], pageTitles:{},
+  orcidLastSync:{},
   members:[], projects:[], news:[], events:[], publications:[], recruiting:[], resources:[]
 };
 let isAdmin = false;
@@ -2157,7 +2167,8 @@ function allDataFiles(){
       recTypes: D.recTypes, newsCategories: D.newsCategories,
       departments: D.departments, calEventTypes: D.calEventTypes,
       scholarUrl: D.scholarUrl, hiddenTabs: D.hiddenTabs,
-      heroVisible: D.heroVisible, pageTitles: D.pageTitles
+      heroVisible: D.heroVisible, pageTitles: D.pageTitles,
+      orcidLastSync: D.orcidLastSync
     }],
     ['members.json',      D.members      || []],
     ['projects.json',     D.projects     || []],
@@ -2565,7 +2576,7 @@ async function saveAbout(){
     linkedin:    document.getElementById('afLinkedin').value.trim()||null,
   };
   D.aboutPhotos=[..._afPhotos];
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update settings');
   closeModal('aboutModal');
   renderAbout(); renderStats(); initAboutGallery();
 }
@@ -2674,14 +2685,14 @@ async function addRole(){
   D.memberRoles.push(v);
   document.getElementById('newRoleInput').value='';
   renderRoleList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update member roles');
   initMemberFilters();
 }
 async function removeRole(idx){
   if(!D.memberRoles) return;
   D.memberRoles.splice(idx,1);
   renderRoleList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update member roles');
   initMemberFilters();
 }
 
@@ -2872,8 +2883,9 @@ async function saveMember(){
   };
   if(id){const i=D.members.findIndex(m=>m.id===id);D.members[i]=obj;}
   else{D.members.push(obj);}
-  await saveToGitHub();
+  const saved = await saveDataFiles(['members.json'], 'Update members');
   btn.disabled=false; btn.textContent='Save Member';
+  if(!saved) return;
   logChange('Member saved', id ? 'Updated: '+name : 'Added: '+name);
   closeModal('mFormModal'); rMembers(); renderStats();
 
@@ -3035,7 +3047,7 @@ async function removeMemberFromProj(projId,memberId,e){
   e.stopPropagation();
   const p=gp(projId);
   p.memberIds=(p.memberIds||[]).filter(id=>id!==memberId);
-  await saveToGitHub();
+  await saveDataFiles(['projects.json'], 'Update projects');
   rProjects();
 }
 
@@ -3155,13 +3167,13 @@ async function addTag(){
   D.projectTags.push(v);
   document.getElementById('newTagInput').value='';
   renderTagList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update project tags');
   initTagFilters();
 }
 async function removeTag(idx){
   D.projectTags.splice(idx,1);
   renderTagList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update project tags');
   initTagFilters();
 }
 
@@ -3228,7 +3240,7 @@ async function addRecType(){
   D.recTypes.push(v);
   document.getElementById('newRecTypeInput').value='';
   renderRecTypeList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update recruiting types');
   initRecTypeFilters();
   populateRfType();
 }
@@ -3236,7 +3248,7 @@ async function removeRecType(idx){
   if(!D.recTypes) return;
   D.recTypes.splice(idx,1);
   renderRecTypeList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update recruiting types');
   initRecTypeFilters();
   populateRfType();
 }
@@ -3556,7 +3568,7 @@ async function addHeroGalleryUrl(){
   if(!D.heroBgSettings.heroPhotos) D.heroBgSettings.heroPhotos=[];
   D.heroBgSettings.heroPhotos.push(url);
   document.getElementById('bgHeroPhotoUrl').value='';
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero gallery');
   initHeroGallery(); renderHeroGalleryMgr();
 }
 async function uploadHeroGalleryPhotos(input){
@@ -3568,14 +3580,14 @@ async function uploadHeroGalleryPhotos(input){
   try{
     const urls=await Promise.all(uploadAll);
     D.heroBgSettings.heroPhotos.push(...urls);
-    await saveToGitHub(); initHeroGallery(); renderHeroGalleryMgr();
+    await saveDataFiles(['settings.json'], 'Update hero gallery'); initHeroGallery(); renderHeroGalleryMgr();
   }catch(e){ console.error('Hero upload error',e); }
   input.value='';
 }
 async function removeHeroGalleryPhoto(idx){
   if(!D.heroBgSettings||!D.heroBgSettings.heroPhotos) return;
   D.heroBgSettings.heroPhotos.splice(idx,1);
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero gallery');
   initHeroGallery(); renderHeroGalleryMgr();
 }
 
@@ -3983,7 +3995,7 @@ async function applyBgColor(){
   if(!D.heroBgSettings) D.heroBgSettings={mode:'color',color,textColor:'#ffffff',accentColor:'#a5d4c4',heroPhotoUrl:null};
   D.heroBgSettings.mode='color';
   D.heroBgSettings.color=color;
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero background');
   setBgTab('color');
   initHeroBg();
 }
@@ -3992,7 +4004,7 @@ async function applyTextColor(){
   document.getElementById('bgTextHex').value=color;
   if(!D.heroBgSettings) D.heroBgSettings={mode:'slideshow',color:'#2d4a3e',textColor:color,accentColor:'#a5d4c4',heroPhotoUrl:null};
   D.heroBgSettings.textColor=color;
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero text color');
   applyHeroTextColor(color);
 }
 async function resetTextColor(){
@@ -4000,7 +4012,7 @@ async function resetTextColor(){
   document.getElementById('bgTextHex').value='#ffffff';
   if(!D.heroBgSettings) D.heroBgSettings={mode:'slideshow',color:'#2d4a3e',textColor:'#ffffff',accentColor:'#a5d4c4',heroPhotoUrl:null};
   D.heroBgSettings.textColor='#ffffff';
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero text color');
   applyHeroTextColor('#ffffff');
 }
 async function applyAccentColor(){
@@ -4008,7 +4020,7 @@ async function applyAccentColor(){
   document.getElementById('bgAccentHex').value=color;
   if(!D.heroBgSettings) D.heroBgSettings={mode:'slideshow',color:'#2d4a3e',textColor:'#ffffff',accentColor:color,heroPhotoUrl:null};
   D.heroBgSettings.accentColor=color;
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero accent color');
   applyHeroAccentColor(color);
 }
 async function resetAccentColor(){
@@ -4016,7 +4028,7 @@ async function resetAccentColor(){
   document.getElementById('bgAccentHex').value='#a5d4c4';
   if(!D.heroBgSettings) D.heroBgSettings={mode:'slideshow',color:'#2d4a3e',textColor:'#ffffff',accentColor:'#a5d4c4',heroPhotoUrl:null};
   D.heroBgSettings.accentColor='#a5d4c4';
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero accent color');
   applyHeroAccentColor('#a5d4c4');
 }
 // uploadHeroPhoto / applyHeroPhoto / removeHeroPhoto replaced by gallery functions above
@@ -4118,14 +4130,14 @@ async function addEvType(){
   D.calEventTypes.push({id,label,color,bg,text:color});
   ['newEvTypeId','newEvTypeLabel'].forEach(f=>document.getElementById(f).value='');
   renderEvTypeList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update calendar event types');
   renderCalLegend(); rCalendar();
 }
 async function removeEvType(idx){
   if(!D.calEventTypes) return;
   D.calEventTypes.splice(idx,1);
   renderEvTypeList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update calendar event types');
   renderCalLegend(); rCalendar();
 }
 function populateEvTypeSelect(){
@@ -4281,7 +4293,7 @@ function togglePastEvents(){
 async function deleteEventDirect(id){
   if(!confirm('Delete this event?')) return;
   D.events=(D.events||[]).filter(e=>e.id!==id&&e.parentId!==id);
-  await saveToGitHub();
+  await saveDataFiles(['events.json'], 'Delete event');
   rCalendar();
 }
 
@@ -4377,7 +4389,7 @@ function openEventDetail(evEncoded){
         if(!confirm('Delete this news item and its calendar event?')) return;
         D.news=D.news.filter(n=>n.id!==ev.newsId);
         D.events=(D.events||[]).filter(e=>e.id!==ev.id);
-        await saveToGitHub();
+        await saveDataFiles(['news.json','events.json'], 'Delete news event');
         closeModal('confirmModal'); rNews(); rCalendar();
       };
     } else if(ev.newsId && !newsRecord){
@@ -4387,7 +4399,7 @@ function openEventDetail(evEncoded){
       delBtn.onclick=async()=>{
         if(!confirm('Remove this orphaned calendar event? (The original news post no longer exists.)')) return;
         D.events=(D.events||[]).filter(e=>e.id!==ev.id);
-        await saveToGitHub();
+        await saveDataFiles(['events.json'], 'Update events');
         closeModal('confirmModal'); rCalendar();
       };
     } else if(ev.recId){
@@ -4397,7 +4409,7 @@ function openEventDetail(evEncoded){
       delBtn.onclick=async()=>{
         if(!confirm('Remove this deadline from the calendar?\nThe recruiting posting will be kept.')) return;
         const r=D.recruiting.find(x=>x.id===ev.recId);
-        if(r){ r.deadline=null; await saveToGitHub(); }
+        if(r){ r.deadline=null; await saveDataFiles(['recruiting.json'], 'Update recruiting'); }
         closeModal('confirmModal'); rCalendar();
       };
     } else if(ev.autoGen){
@@ -4408,7 +4420,7 @@ function openEventDetail(evEncoded){
       delBtn.onclick=async()=>{
         if(!confirm('Delete this event?')) return;
         D.events=(D.events||[]).filter(e=>e.id!==ev.id&&e.parentId!==ev.id);
-        await saveToGitHub();
+        await saveDataFiles(['events.json'], 'Delete event');
         closeModal('confirmModal'); rCalendar();
       };
     } else {
@@ -4419,7 +4431,7 @@ function openEventDetail(evEncoded){
       delBtn.onclick=async()=>{
         if(!confirm('Delete this event?')) return;
         D.events=(D.events||[]).filter(e=>e.id!==ev.id&&e.parentId!==ev.id);
-        await saveToGitHub();
+        await saveDataFiles(['events.json'], 'Delete event');
         closeModal('confirmModal'); rCalendar();
       };
     }
@@ -4470,7 +4482,7 @@ async function deleteEventFromForm(){
   if(!id){return;}
   if(!confirm('Delete this event? This cannot be undone.')) return;
   D.events=(D.events||[]).filter(e=>e.id!==id&&e.parentId!==id);
-  await saveToGitHub();
+  await saveDataFiles(['events.json'], 'Delete event');
   closeModal('evFormModal');
   rCalendar();
   logChange('Event deleted', id);
@@ -4714,7 +4726,7 @@ async function syncOrcidPublications(){
   if(!D.orcidLastSync) D.orcidLastSync={};
   D.orcidLastSync.date=new Date().toISOString();
   D.orcidLastSync.added=newCount;
-  await saveToGitHub();
+  await saveDataFiles(['publications.json','settings.json'], 'Sync publications');
 
   dot.className='orcid-sync-dot done';
   msg.textContent=`Sync complete — ${newCount} new publications added${errorCount>0?' ('+errorCount+' errors)':''}`;
@@ -4745,7 +4757,8 @@ function showOrcidSyncStatus(){
   statusDiv.style.display='flex';
   dot.className='orcid-sync-dot done';
   msg.textContent=`${(D.publications||[]).length} publications (${(D.publications||[]).filter(p=>p.source==='orcid').length} from ORCID)`;
-  lastSync.textContent='Last synced: '+new Date(D.orcidLastSync.date).toLocaleString();
+  const syncedAt = D.orcidLastSync.date || D.orcidLastSync.openAlexDate;
+  lastSync.textContent = syncedAt ? 'Last synced: '+new Date(syncedAt).toLocaleString() : '';
 }
 
 function rPublications(){
@@ -5110,7 +5123,7 @@ async function toggleNavTab(id, visible){
   if(!D.hiddenTabs) D.hiddenTabs=[];
   if(visible) D.hiddenTabs=D.hiddenTabs.filter(t=>t!==id);
   else if(!D.hiddenTabs.includes(id)) D.hiddenTabs.push(id);
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update navigation tabs');
   applyHiddenTabs();
   // Refresh label text in manager
   const hidden=new Set(D.hiddenTabs);
@@ -5160,7 +5173,7 @@ async function addNewsCategory(){
   D.newsCategories.push(v);
   document.getElementById('newCatInput').value='';
   renderNewsCatList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update news categories');
   populateNfCat();
   buildNewsCatFilterBar();
 }
@@ -5168,7 +5181,7 @@ async function removeNewsCategory(idx){
   if(!D.newsCategories) return;
   D.newsCategories.splice(idx,1);
   renderNewsCatList();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update news categories');
   populateNfCat();
 }
 
@@ -5253,19 +5266,19 @@ function dndDrop(e, type){
   // Debounced save (avoid too many writes while dragging)
   clearTimeout(_dndSaveTimer);
   _dndSaveTimer = setTimeout(async () => {
-    await saveToGitHub();
+    await saveDataFiles([type==='member' ? 'members.json' : (type==='rec' ? 'recruiting.json' : 'projects.json')], 'Update display order');
   }, 800);
 }
 
 /* Reset custom order (restore default sort) */
 async function resetMemberOrder(){
   D.members.forEach(m => delete m.order);
-  await saveToGitHub();
+  await saveDataFiles(['members.json'], 'Reset member order');
   rMembers();
 }
 async function resetProjectOrder(){
   D.projects.forEach(p => delete p.order);
-  await saveToGitHub();
+  await saveDataFiles(['projects.json'], 'Reset project order');
   rProjects();
 }
 
@@ -5287,7 +5300,7 @@ async function listDndDrop(e, type, toIdx){
   const item=arr.splice(from,1)[0];
   arr.splice(toIdx,0,item);
   rerender();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update list order');
 }
 
 /* ── Department Manager ── */
@@ -5316,13 +5329,13 @@ async function addDept(){
   D.departments.push(v);
   document.getElementById('newDeptInput').value='';
   renderDeptList(); populateMfDept();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update departments');
 }
 async function removeDept(i){
   if(!D.departments) return;
   D.departments.splice(i,1);
   renderDeptList(); populateMfDept();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update departments');
 }
 
 /* ══════════════════════════════════════════════════
@@ -5390,13 +5403,13 @@ async function applyCustomTheme(){
   const bg=document.getElementById('thBgHex').value.trim()||document.getElementById('thBg').value;
   D.theme={primary,accent,bg};
   applyThemeColors(primary,accent,bg);
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update theme');
   closeModal('themeModal');
 }
 async function resetTheme(){
   delete D.theme;
   applyThemeColors('#2d4a3e','#b8873f','#f5f2ec');
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Reset theme');
   closeModal('themeModal');
 }
 function initTheme(){
@@ -5683,7 +5696,7 @@ async function saveTypo(){
     if(weightEl)obj.weight=weightEl.value;
     D.typography[row.id]=obj;
   });
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update typography');
   logChange('Typography saved');
   closeModal('typoModal');
 }
@@ -5700,7 +5713,7 @@ async function resetTypo(){
     if(row.color) root.style.setProperty(row.color.var,  row.color.def);
     if(row.weight)root.style.setProperty(row.weight.var, row.weight.def);
   });
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Reset typography');
   closeModal('typoModal');
 }
 
@@ -5756,14 +5769,14 @@ async function savePageTitles(){
     const sub=document.getElementById('pt-sub-'+page)?.value.trim();
     D.pageTitles[page]={title:title||PAGE_TITLE_DEFAULTS[page].title, sub:sub||''};
   });
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update page titles');
   applyPageTitles();
   closeModal('pageTitleModal');
 }
 
 async function resetPageTitles(){
   D.pageTitles={};
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Reset page titles');
   applyPageTitles();
   closeModal('pageTitleModal');
 }
@@ -5874,7 +5887,7 @@ async function confirmBulkDelete(){
   const btn = document.getElementById('pubBulkDelBtn');
   btn.disabled = true; btn.textContent = 'Deleting…';
   D.publications = (D.publications||[]).filter(p => !_bulkSelected.has(p.id));
-  await saveToGitHub();
+  await saveDataFiles(['publications.json'], 'Delete publications');
   _bulkSelected.clear();
   closeModal('pubBulkModal');
   rPublications();
@@ -5985,7 +5998,7 @@ async function syncOpenAlex(){
 
   if(!D.orcidLastSync) D.orcidLastSync={};
   D.orcidLastSync.openAlexDate=new Date().toISOString();
-  await saveToGitHub();
+  await saveDataFiles(['publications.json','settings.json'], 'Sync OpenAlex publications');
 
   dot.className='orcid-sync-dot done';
   msg.textContent=`OpenAlex sync complete — ${newCount} new publications added${errorCount?' ('+errorCount+' errors)':''}`;
@@ -6109,7 +6122,7 @@ async function syncSingleMemberPubs(name, orcid){
     else{const k=_titleKey(p.title,p.year);if(seenKeys.has(k))return false;seenKeys.add(k);return true;}
   });
 
-  await saveToGitHub();
+  await saveDataFiles(['publications.json'], 'Sync member publications');
   if(dot) dot.className='orcid-sync-dot done';
   if(msg) msg.textContent=`${name}: ${newCount} new publications added`;
   logChange('Auto-synced pubs', `${name} (${orcid}) → ${newCount} new`);
@@ -6155,7 +6168,7 @@ async function saveFooter(){
     email: document.getElementById('ffEmail').value.trim()||null,
     linkedin: document.getElementById('ffLinkedIn').value.trim()||null,
   };
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update footer');
   renderFooter();
   closeModal('footerModal');
 }
@@ -6176,7 +6189,7 @@ function applyHeroVisibility(){
 async function toggleHeroSection(){
   D.heroVisible = D.heroVisible === false ? true : false;
   applyHeroVisibility();
-  await saveToGitHub();
+  await saveDataFiles(['settings.json'], 'Update hero visibility');
 }
 
 /* ══════════════════════════════════════════════════
@@ -6484,7 +6497,8 @@ async function confirmCSVImport(){
   if(type==='members')  D.members  = JSON.parse(JSON.stringify(D.members));
   if(type==='projects') D.projects = JSON.parse(JSON.stringify(D.projects));
   if(type==='news')     D.news     = JSON.parse(JSON.stringify(D.news));
-  await saveToGitHub();
+  const importFiles = type==='members' ? ['members.json'] : type==='news' ? ['news.json'] : ['projects.json'];
+  await saveDataFiles(importFiles, `Import ${type} CSV`);
   logChange(`Imported ${type} CSV`, `${added} added, ${updated} updated`);
   btn.disabled=false; btn.textContent='Import';
   closeModal('csvPreviewModal');
