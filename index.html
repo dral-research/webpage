@@ -1950,7 +1950,7 @@ async function ghCommitFiles(files, message='Update website data'){
 }
 
 async function ghCommitEntries(entries, message='Update website data'){
-  for(let attempt=1; attempt<=4; attempt++){
+  for(let attempt=1; attempt<=8; attempt++){
     try{
       const ref = await ghApi(`/git/ref/heads/${encodeURIComponent(GH.branch)}`);
       const headSha = ref.object.sha;
@@ -1973,12 +1973,12 @@ async function ghCommitEntries(entries, message='Update website data'){
       return true;
     }catch(e){
       const conflict = /409|422|Reference update failed|fast forward|sha|Conflict/i.test(e.message || '');
-      if(conflict && attempt < 4){
-        await new Promise(r => setTimeout(r, 700 * attempt));
+      if(conflict && attempt < 8){
+        await new Promise(r => setTimeout(r, 500 * attempt + Math.floor(Math.random() * 500)));
         continue;
       }
       console.error('GitHub commit error:', e);
-      alert(`Save failed:\n${e.message}\n\nRefresh the page and try again. Also check your PAT has Contents: write permission.`);
+      alert(`Save failed:\n${e.message}\n\nYour on-screen change was not saved and has been rolled back. Please try again in a moment. Also check your PAT has Contents: write permission.`);
       return false;
     }
   }
@@ -2077,7 +2077,10 @@ function sortMembers(arr){
     return an<bn?-1:an>bn?1:0;
   });
 }
-const nextId = arr => arr.length ? Math.max(...arr.map(x=>x.id))+1 : 1;
+function nextId(arr){
+  const nums = (arr||[]).map(x => Number(x&&x.id)).filter(Number.isFinite);
+  return nums.length ? Math.max(...nums) + 1 : 1;
+}
 
 function closeModal(id){ document.getElementById(id).classList.remove('open') }
 function openModal(id) { document.getElementById(id).classList.add('open') }
@@ -2183,6 +2186,28 @@ function allDataFiles(){
 function selectedDataFiles(names){
   const wanted = new Set(names);
   return allDataFiles().filter(([filename]) => wanted.has(filename));
+}
+
+function dataSnapshot(names){
+  const snap = {};
+  selectedDataFiles(names).forEach(([filename, data]) => {
+    snap[filename] = cleanForJson(data);
+  });
+  return snap;
+}
+
+function restoreDataSnapshot(snap){
+  if(!snap) return;
+  Object.entries(snap).forEach(([filename, data]) => {
+    if(filename === 'settings.json') Object.assign(D, cleanForJson(data));
+    else if(filename === 'members.json') D.members = cleanForJson(data);
+    else if(filename === 'projects.json') D.projects = cleanForJson(data);
+    else if(filename === 'news.json') D.news = cleanForJson(data);
+    else if(filename === 'events.json') D.events = cleanForJson(data);
+    else if(filename === 'publications.json') D.publications = cleanForJson(data);
+    else if(filename === 'recruiting.json') D.recruiting = cleanForJson(data);
+    else if(filename === 'resources.json') D.resources = cleanForJson(data);
+  });
 }
 
 async function saveDataFiles(names, message='Update website data'){
@@ -2863,6 +2888,7 @@ async function saveMember(){
   // Get previous ORCID to detect changes
   const prevMember = id ? D.members.find(m=>m.id===id) : null;
   const prevOrcid = prevMember?.orcid||null;
+  const snap = dataSnapshot(['members.json']);
 
   const obj={
     id:id||nextId(D.members), name, email,
@@ -2885,7 +2911,7 @@ async function saveMember(){
   else{D.members.push(obj);}
   const saved = await saveDataFiles(['members.json'], 'Update members');
   btn.disabled=false; btn.textContent='Save Member';
-  if(!saved) return;
+  if(!saved){ restoreDataSnapshot(snap); rMembers(); renderStats(); return; }
   logChange('Member saved', id ? 'Updated: '+name : 'Added: '+name);
   closeModal('mFormModal'); rMembers(); renderStats();
 
@@ -3045,9 +3071,11 @@ function rProjects(){
 
 async function removeMemberFromProj(projId,memberId,e){
   e.stopPropagation();
+  const snap = dataSnapshot(['projects.json']);
   const p=gp(projId);
   p.memberIds=(p.memberIds||[]).filter(id=>id!==memberId);
-  await saveDataFiles(['projects.json'], 'Update projects');
+  const saved = await saveDataFiles(['projects.json'], 'Update projects');
+  if(!saved){ restoreDataSnapshot(snap); }
   rProjects();
 }
 
@@ -3111,6 +3139,7 @@ async function saveProject(){
   const btn=document.getElementById('pfSaveBtn');
   btn.disabled=true; btn.textContent='Saving…';
   const id=parseInt(document.getElementById('pfId').value||'0');
+  const snap = dataSnapshot(['projects.json']);
   const tags=document.getElementById('pfTags').value.split(',').map(t=>t.trim()).filter(Boolean);
   const obj={
     id:id||nextId(D.projects), title, desc, tags,
@@ -3131,7 +3160,7 @@ async function saveProject(){
   else{D.projects.push(obj);}
   const saved = await saveDataFiles(['projects.json'], 'Update projects');
   btn.disabled=false; btn.textContent='Save Project';
-  if(!saved) return;
+  if(!saved){ restoreDataSnapshot(snap); rProjects(); renderStats(); return; }
   logChange('Project saved', document.getElementById('pfId').value ? 'Updated: '+document.getElementById('pfTitle').value : 'Added: '+document.getElementById('pfTitle').value);
   closeModal('pFormModal'); rProjects(); renderStats();
 }
@@ -3413,6 +3442,7 @@ async function saveRec(){
   const btn=document.getElementById('rfSaveBtn');
   btn.disabled=true; btn.textContent='Saving…';
   const id=parseInt(document.getElementById('rfId').value||'0');
+  const snap = dataSnapshot(['recruiting.json']);
   const obj={
     id:id||nextId(D.recruiting), title, desc,
     type:document.getElementById('rfType').value,
@@ -3429,7 +3459,7 @@ async function saveRec(){
   else{D.recruiting.unshift(obj);}
   const saved = await saveDataFiles(['recruiting.json'], 'Update recruiting');
   btn.disabled=false; btn.textContent='Save Posting';
-  if(!saved) return;
+  if(!saved){ restoreDataSnapshot(snap); rRec(); return; }
   closeModal('rFormModal'); rRec();
 }
 
@@ -3748,6 +3778,8 @@ async function saveNews(){
   const category=document.getElementById('nfCat').value;
   const eventDate=document.getElementById('nfEventDate').value||null;
   const eventTime=document.getElementById('nfEventTime').value||null;
+  const newsFiles = category==='Event'&&eventDate ? ['news.json','events.json'] : ['news.json'];
+  const snap = dataSnapshot(newsFiles);
   const obj={
     id:id||nextId(D.news), title, content, date, category,
     author:document.getElementById('nfAuthor').value.trim()||'DrAL Lab',
@@ -3773,9 +3805,9 @@ async function saveNews(){
       address:obj.address||null,mapsUrl:obj.mapsUrl||null,
       newsId:id||obj.id,autoGen:true});
   }
-  const saved = await saveDataFiles(category==='Event'&&eventDate ? ['news.json','events.json'] : ['news.json'], 'Update news');
+  const saved = await saveDataFiles(newsFiles, 'Update news');
   btn.disabled=false; btn.textContent='Save News';
-  if(!saved) return;
+  if(!saved){ restoreDataSnapshot(snap); rNews(); rCalendar(); return; }
   logChange('News saved', document.getElementById('nfTitle').value);
   closeModal('nFormModal'); rNews(); rCalendar();
 }
@@ -3799,6 +3831,19 @@ function confirmDelete(type,id){
   if(editBtn) editBtn.style.display='none';
   if(delBtn)  delBtn.style.display='none';
   okBtn.onclick=async()=>{
+    okBtn.disabled=true;
+    okBtn.textContent='Deleting...';
+    const filesByType = {
+      member: ['members.json','projects.json'],
+      project: ['projects.json'],
+      rec: ['recruiting.json'],
+      news: ['news.json'],
+      event: ['events.json'],
+      pub: ['publications.json'],
+      res: ['resources.json'],
+    };
+    const filesToSave = filesByType[type] || allDataFiles().map(([filename]) => filename);
+    const snap = dataSnapshot(filesToSave);
     if(type==='member'){
       D.members=D.members.filter(m=>m.id!==id);
       D.projects.forEach(p=>{p.memberIds=(p.memberIds||[]).filter(mid=>mid!==id)});
@@ -3815,17 +3860,10 @@ function confirmDelete(type,id){
     } else if(type==='res'){
       D.resources=(D.resources||[]).filter(r=>r.id!==id);
     }
-    const filesByType = {
-      member: ['members.json','projects.json'],
-      project: ['projects.json'],
-      rec: ['recruiting.json'],
-      news: ['news.json'],
-      event: ['events.json'],
-      pub: ['publications.json'],
-      res: ['resources.json'],
-    };
-    const saved = await saveDataFiles(filesByType[type] || allDataFiles().map(([filename]) => filename), `Delete ${labels[type] || 'item'}`);
-    if(!saved) return;
+    const saved = await saveDataFiles(filesToSave, `Delete ${labels[type] || 'item'}`);
+    okBtn.disabled=false;
+    okBtn.textContent='Delete';
+    if(!saved){ restoreDataSnapshot(snap); renderAll(); return; }
     closeModal('confirmModal');
     renderAll();
   };
@@ -4292,8 +4330,10 @@ function togglePastEvents(){
 
 async function deleteEventDirect(id){
   if(!confirm('Delete this event?')) return;
+  const snap = dataSnapshot(['events.json']);
   D.events=(D.events||[]).filter(e=>e.id!==id&&e.parentId!==id);
-  await saveDataFiles(['events.json'], 'Delete event');
+  const saved = await saveDataFiles(['events.json'], 'Delete event');
+  if(!saved){ restoreDataSnapshot(snap); }
   rCalendar();
 }
 
@@ -4387,9 +4427,11 @@ function openEventDetail(evEncoded){
       delBtn.textContent='🗑 Delete';
       delBtn.onclick=async()=>{
         if(!confirm('Delete this news item and its calendar event?')) return;
+        const snap = dataSnapshot(['news.json','events.json']);
         D.news=D.news.filter(n=>n.id!==ev.newsId);
         D.events=(D.events||[]).filter(e=>e.id!==ev.id);
-        await saveDataFiles(['news.json','events.json'], 'Delete news event');
+        const saved = await saveDataFiles(['news.json','events.json'], 'Delete news event');
+        if(!saved){ restoreDataSnapshot(snap); }
         closeModal('confirmModal'); rNews(); rCalendar();
       };
     } else if(ev.newsId && !newsRecord){
@@ -4398,8 +4440,10 @@ function openEventDetail(evEncoded){
       delBtn.textContent='🗑 Remove from Calendar';
       delBtn.onclick=async()=>{
         if(!confirm('Remove this orphaned calendar event? (The original news post no longer exists.)')) return;
+        const snap = dataSnapshot(['events.json']);
         D.events=(D.events||[]).filter(e=>e.id!==ev.id);
-        await saveDataFiles(['events.json'], 'Update events');
+        const saved = await saveDataFiles(['events.json'], 'Update events');
+        if(!saved){ restoreDataSnapshot(snap); }
         closeModal('confirmModal'); rCalendar();
       };
     } else if(ev.recId){
@@ -4408,8 +4452,13 @@ function openEventDetail(evEncoded){
       delBtn.textContent='🗑 Clear Deadline';
       delBtn.onclick=async()=>{
         if(!confirm('Remove this deadline from the calendar?\nThe recruiting posting will be kept.')) return;
+        const snap = dataSnapshot(['recruiting.json']);
         const r=D.recruiting.find(x=>x.id===ev.recId);
-        if(r){ r.deadline=null; await saveDataFiles(['recruiting.json'], 'Update recruiting'); }
+        if(r){
+          r.deadline=null;
+          const saved = await saveDataFiles(['recruiting.json'], 'Update recruiting');
+          if(!saved){ restoreDataSnapshot(snap); }
+        }
         closeModal('confirmModal'); rCalendar();
       };
     } else if(ev.autoGen){
@@ -4419,8 +4468,10 @@ function openEventDetail(evEncoded){
       delBtn.textContent='🗑 Delete';
       delBtn.onclick=async()=>{
         if(!confirm('Delete this event?')) return;
+        const snap = dataSnapshot(['events.json']);
         D.events=(D.events||[]).filter(e=>e.id!==ev.id&&e.parentId!==ev.id);
-        await saveDataFiles(['events.json'], 'Delete event');
+        const saved = await saveDataFiles(['events.json'], 'Delete event');
+        if(!saved){ restoreDataSnapshot(snap); }
         closeModal('confirmModal'); rCalendar();
       };
     } else {
@@ -4430,8 +4481,10 @@ function openEventDetail(evEncoded){
       delBtn.textContent='🗑 Delete';
       delBtn.onclick=async()=>{
         if(!confirm('Delete this event?')) return;
+        const snap = dataSnapshot(['events.json']);
         D.events=(D.events||[]).filter(e=>e.id!==ev.id&&e.parentId!==ev.id);
-        await saveDataFiles(['events.json'], 'Delete event');
+        const saved = await saveDataFiles(['events.json'], 'Delete event');
+        if(!saved){ restoreDataSnapshot(snap); }
         closeModal('confirmModal'); rCalendar();
       };
     }
@@ -4481,8 +4534,10 @@ async function deleteEventFromForm(){
   const id=document.getElementById('evId').value;
   if(!id){return;}
   if(!confirm('Delete this event? This cannot be undone.')) return;
+  const snap = dataSnapshot(['events.json']);
   D.events=(D.events||[]).filter(e=>e.id!==id&&e.parentId!==id);
-  await saveDataFiles(['events.json'], 'Delete event');
+  const saved = await saveDataFiles(['events.json'], 'Delete event');
+  if(!saved){ restoreDataSnapshot(snap); rCalendar(); return; }
   closeModal('evFormModal');
   rCalendar();
   logChange('Event deleted', id);
@@ -4495,6 +4550,7 @@ async function saveEvent(){
   const btn=document.getElementById('evSaveBtn');
   btn.disabled=true; btn.textContent='Saving…';
   if(!D.events) D.events=[];
+  const snap = dataSnapshot(['events.json']);
   const id=document.getElementById('evId').value||('ev-'+Date.now());
   const endDate=document.getElementById('evEndDate').value||null;
   const recur=document.getElementById('evRecur').value;
@@ -4525,7 +4581,7 @@ async function saveEvent(){
   D.events.push(...toAdd);
   const saved = await saveDataFiles(['events.json'], 'Update events');
   btn.disabled=false; btn.textContent='Save Event';
-  if(!saved) return;
+  if(!saved){ restoreDataSnapshot(snap); rCalendar(); return; }
   closeModal('evFormModal'); rCalendar();
 }
 
@@ -4856,6 +4912,7 @@ async function savePub(){
   const btn=document.getElementById('pfPubSaveBtn');
   btn.disabled=true; btn.textContent='Saving…';
   if(!D.publications) D.publications=[];
+  const snap = dataSnapshot(['publications.json']);
   const id=document.getElementById('pfPubId').value||('pub-'+Date.now());
   const obj={id,title,
     authors:document.getElementById('pfPubAuthors').value.trim()||null,
@@ -4870,7 +4927,7 @@ async function savePub(){
   if(idx>=0) D.publications[idx]=obj; else D.publications.push(obj);
   const saved = await saveDataFiles(['publications.json'], 'Update publications');
   btn.disabled=false; btn.textContent='Save';
-  if(!saved) return;
+  if(!saved){ restoreDataSnapshot(snap); rPublications(); return; }
   closeModal('pubFormModal'); rPublications();
 }
 
@@ -4936,6 +4993,7 @@ async function saveResource(){
   const btn=document.getElementById('rfResSaveBtn');
   btn.disabled=true; btn.textContent='Saving…';
   if(!D.resources) D.resources=[];
+  const snap = dataSnapshot(['resources.json']);
   const id=document.getElementById('rfResId').value||('res-'+Date.now());
   const obj={id,title,
     desc:document.getElementById('rfResDesc').value.trim()||null,
@@ -4949,7 +5007,7 @@ async function saveResource(){
   if(idx>=0) D.resources[idx]=obj; else D.resources.push(obj);
   const saved = await saveDataFiles(['resources.json'], 'Update resources');
   btn.disabled=false; btn.textContent='Save';
-  if(!saved) return;
+  if(!saved){ restoreDataSnapshot(snap); rResources(); return; }
   closeModal('resFormModal'); rResources();
 }
 
@@ -5886,8 +5944,15 @@ async function confirmBulkDelete(){
   if(!confirm(`Delete ${n} publication${n>1?'s':''}? This cannot be undone.`)) return;
   const btn = document.getElementById('pubBulkDelBtn');
   btn.disabled = true; btn.textContent = 'Deleting…';
+  const snap = dataSnapshot(['publications.json']);
   D.publications = (D.publications||[]).filter(p => !_bulkSelected.has(p.id));
-  await saveDataFiles(['publications.json'], 'Delete publications');
+  const saved = await saveDataFiles(['publications.json'], 'Delete publications');
+  if(!saved){
+    restoreDataSnapshot(snap);
+    btn.disabled = false; btn.textContent = '🗑 Delete Selected';
+    rPublications();
+    return;
+  }
   _bulkSelected.clear();
   closeModal('pubBulkModal');
   rPublications();
@@ -6477,6 +6542,8 @@ async function confirmCSVImport(){
   btn.disabled=true; btn.textContent='Importing…';
   if(!D.news) D.news=[];
   const arr = type==='members' ? D.members : type==='news' ? D.news : D.projects;
+  const importFiles = type==='members' ? ['members.json'] : type==='news' ? ['news.json'] : ['projects.json'];
+  const snap = dataSnapshot(importFiles);
   let added=0, updated=0;
   _csvImportRows.forEach(row=>{
     if(type==='news'){
@@ -6497,8 +6564,15 @@ async function confirmCSVImport(){
   if(type==='members')  D.members  = JSON.parse(JSON.stringify(D.members));
   if(type==='projects') D.projects = JSON.parse(JSON.stringify(D.projects));
   if(type==='news')     D.news     = JSON.parse(JSON.stringify(D.news));
-  const importFiles = type==='members' ? ['members.json'] : type==='news' ? ['news.json'] : ['projects.json'];
-  await saveDataFiles(importFiles, `Import ${type} CSV`);
+  const saved = await saveDataFiles(importFiles, `Import ${type} CSV`);
+  if(!saved){
+    restoreDataSnapshot(snap);
+    btn.disabled=false; btn.textContent='Import';
+    if(type==='members') rMembers();
+    else if(type==='news'){ rNews(); rCalendar(); }
+    else rProjects();
+    return;
+  }
   logChange(`Imported ${type} CSV`, `${added} added, ${updated} updated`);
   btn.disabled=false; btn.textContent='Import';
   closeModal('csvPreviewModal');
