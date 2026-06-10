@@ -1,337 +1,375 @@
-[
-  {
-    "id": 1,
-    "abbr": "AEP",
-    "title": "Active El Paso (AEP)",
-    "status": "Completed",
-    "startYear": 2018,
-    "endYear": 2023,
-    "pi": "Chanam Lee",
-    "funding": "NIH R01",
-    "tags": [
-      "Mobility",
-      "Equity",
-      "Aging"
-    ],
-    "recruiting": false,
-    "memberIds": [
-      1,
-      2,
-      3,
-      6,
-      4,
-      11
-    ],
-    "desc": "Evaluate the health and mobility impacts of Bus Rapid Transit (BRT), examine implementation costs and benefits, and explore barriers and facilitators to BRT use.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  },
-  {
-    "id": 2,
-    "abbr": "ALA",
-    "title": "Active Living Austin (ALA)",
-    "status": "Completed",
-    "startYear": 2015,
-    "endYear": 2022,
-    "pi": "Chanam Lee",
-    "funding": "NIH R01",
-    "tags": [
-      "Health",
-      "Equity",
-      "Urban Design"
-    ],
-    "recruiting": false,
-    "memberIds": [
-      1,
-      2,
-      3,
-      31
-    ],
-    "desc": "Examine the causal impacts of moving to an activity-friendly community (Mueller) on residents' physical activity and health.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  },
-  {
-    "id": 3,
-    "abbr": "DTC",
-    "title": "Digital Twin City for Age-friendly Communities",
-    "status": "Completed",
-    "startYear": 2021,
-    "endYear": 2024,
-    "pi": "Chanam Lee",
-    "funding": null,
-    "tags": [
-      "Urban Design",
-      "Mobility",
-      "Aging"
-    ],
-    "recruiting": false,
-    "memberIds": [],
-    "desc": "Create a digital twin city model that identifies environmental conditions causing distress to older adults and implements interventions that promote their independent mobility and physical activity.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  },
-  {
-    "id": 4,
-    "abbr": "DBSLC",
-    "title": "Design for Better & Safer Long-term Care",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Xuemei Zhu",
-    "funding": "",
-    "tags": [
-      "Health",
-      "Aging"
-    ],
-    "recruiting": false,
-    "desc": "Investigating how architectural design of long-term care facilities affects resident safety, physical activity, social engagement, and quality of life for older adults.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 5,
-    "abbr": "HASD",
-    "title": "Healthy and Active School Design",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Xuemei Zhu",
-    "funding": "",
-    "tags": [
-      "Health",
-      "Equity"
-    ],
-    "recruiting": false,
-    "desc": "Examining how school building and campus design promotes or inhibits physical activity, active transportation, and healthy behaviors among K–12 students.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 6,
-    "abbr": "iCAT",
-    "title": "Intergenerational Communities Assessment Tool (iCAT)",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Chanam Lee",
-    "funding": "",
-    "tags": [
-      "Equity",
-      "Urban Design",
-      "Aging"
-    ],
-    "recruiting": false,
-    "desc": "Developing and validating a community assessment tool to measure how well neighborhoods support intergenerational interactions, social cohesion, and active aging.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 7,
-    "abbr": "NbI-HCW",
-    "title": "Nature-based Interventions for Healthcare Workers",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Dongying Li",
-    "funding": "",
-    "tags": [
-      "Health"
-    ],
-    "recruiting": false,
-    "desc": "Studying how exposure to nature-based environments — including healing gardens and green spaces — affects stress recovery, mental health, and well-being of healthcare workers.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 8,
-    "abbr": "PedH",
-    "title": "PedH (Pedestrian Health) Project",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Chanam Lee",
-    "funding": "",
-    "tags": [
-      "Mobility",
-      "Equity"
-    ],
-    "recruiting": false,
-    "desc": "Analyzing how pedestrian infrastructure, street design, and walkability features impact health outcomes, injury risk, and physical activity across diverse populations.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 9,
-    "abbr": "PSIHB",
-    "title": "Programmable Surroundings & Their Impact on Human Behavior",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Zhipeng Lu",
-    "funding": "",
-    "tags": [
-      "Urban Design"
-    ],
-    "recruiting": true,
-    "desc": "Exploring how smart, programmable built environments and responsive design technologies can influence health behaviors and promote active living.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 10,
-    "abbr": "GCP",
-    "title": "The Green Campus Project",
-    "status": "Active",
-    "startYear": 2021,
-    "endYear": null,
-    "pi": "Chanam Lee",
-    "funding": null,
-    "tags": [
-      "Health",
-      "Urban Design"
-    ],
-    "recruiting": false,
-    "memberIds": [
-      15
-    ],
-    "desc": "Quantify greenery on university campuses and examine the relationship between green infrastructure and health-related outcomes among students, faculty, and staff.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  },
-  {
-    "id": 11,
-    "abbr": "UGIPH",
-    "title": "Urban Green (Infra)structure for Pedestrian Health",
-    "status": "Completed",
-    "startYear": 2020,
-    "endYear": 2021,
-    "pi": "Sungmin Lee",
-    "funding": null,
-    "tags": [
-      "Health",
-      "Equity"
-    ],
-    "recruiting": false,
-    "memberIds": [],
-    "desc": "Develop tools and protocols for measuring urban nature in 2D/3D environments and to explore its relationship with pedestrian health outcomes such as safety, thermal comfort, mood, and stress.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  },
-  {
-    "id": 12,
-    "abbr": "Telemedicine",
-    "title": "Examining telemedicine booths as a community-based intervention to improve healthcare access in minority and underserved communities",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Zhipeng Lu",
-    "funding": "",
-    "tags": [
-      "Health",
-      "Equity"
-    ],
-    "recruiting": false,
-    "desc": "Examining how telemedicine booths can improve healthcare access in minority and underserved communities through innovative design interventions.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 13,
-    "abbr": "Telehealth",
-    "title": "From Skepticism to adoption: Examining the application of two telehealth modalities among older adults in rural Texas",
-    "status": "Paused",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Zhipeng Lu",
-    "funding": null,
-    "tags": [
-      "Health"
-    ],
-    "recruiting": false,
-    "memberIds": [
-      5,
-      19
-    ],
-    "desc": "Examining barriers and facilitators to telehealth adoption among older adults in rural Texas through two different modalities.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  },
-  {
-    "id": 14,
-    "abbr": "Green Street",
-    "title": "CALT-Project 2 Green Street",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Sinan Zhong",
-    "funding": "",
-    "tags": [
-      "Health"
-    ],
-    "recruiting": false,
-    "desc": "Research on green street infrastructure and its impacts on community health and walkability.",
-    "partners": "",
-    "driveUrl": ""
-  },
-  {
-    "id": 15,
-    "abbr": "Neighborhood & Health",
-    "title": "DESIGN FOR HEALTH: Age-friendly Communities to Promote Healthy Aging in Place",
-    "status": "Active",
-    "startYear": null,
-    "endYear": null,
-    "pi": "Sinan Zhong",
-    "funding": "COA Small Grant",
-    "tags": [
-      "Health"
-    ],
-    "recruiting": true,
-    "memberIds": [
-      11,
-      2,
-      22,
-      21,
-      16,
-      32,
-      27
-    ],
-    "desc": "This research aims to identify personal and environmental barriers and facilitators of health-related outcomes among older adults living in age-targeted vs. intergenerational communities.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  },
-  {
-    "id": 16,
-    "abbr": "DFC",
-    "title": "Dementia-Friendly Communities (Alzheimer Supplement)",
-    "status": "Completed",
-    "startYear": 2018,
-    "endYear": 2022,
-    "pi": null,
-    "funding": null,
-    "tags": [
-      "Aging"
-    ],
-    "recruiting": false,
-    "memberIds": [],
-    "desc": "Identify environmental strategies that promote physical activity, social interaction, and independence for people with Alzheimer's Disease and Related Dementias while reducing caregiver burden.",
-    "partners": [],
-    "photos": [],
-    "photoUrl": null,
-    "driveUrl": null
-  }
+﻿[
+    {
+        "id":  1,
+        "abbr":  "AEP",
+        "title":  "Active El Paso (AEP)",
+        "status":  "Completed",
+        "startYear":  2018,
+        "endYear":  2023,
+        "pi":  "Chanam Lee",
+        "funding":  "NIH R01",
+        "tags":  [
+                     "Mobility",
+                     "Equity",
+                     "Aging"
+                 ],
+        "recruiting":  false,
+        "memberIds":  [
+                          1,
+                          2,
+                          3,
+                          6,
+                          4,
+                          11
+                      ],
+        "desc":  "Evaluate the health and mobility impacts of Bus Rapid Transit (BRT), examine implementation costs and benefits, and explore barriers and facilitators to BRT use.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    },
+    {
+        "id":  2,
+        "abbr":  "ALA",
+        "title":  "Active Living Austin (ALA)",
+        "status":  "Completed",
+        "startYear":  2015,
+        "endYear":  2022,
+        "pi":  "Chanam Lee",
+        "funding":  "NIH R01",
+        "tags":  [
+                     "Health",
+                     "Equity",
+                     "Urban Design"
+                 ],
+        "recruiting":  false,
+        "memberIds":  [
+                          1,
+                          2,
+                          3,
+                          31
+                      ],
+        "desc":  "Examine the causal impacts of moving to an activity-friendly community (Mueller) on residents\u0027 physical activity and health.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    },
+    {
+        "id":  3,
+        "abbr":  "DTC",
+        "title":  "Digital Twin City for Age-friendly Communities",
+        "status":  "Completed",
+        "startYear":  2021,
+        "endYear":  2024,
+        "pi":  "Chanam Lee",
+        "funding":  null,
+        "tags":  [
+                     "Urban Design",
+                     "Mobility",
+                     "Aging"
+                 ],
+        "recruiting":  false,
+        "memberIds":  [
+
+                      ],
+        "desc":  "Create a digital twin city model that identifies environmental conditions causing distress to older adults and implements interventions that promote their independent mobility and physical activity.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    },
+    {
+        "id":  4,
+        "abbr":  "DBSLC",
+        "title":  "Design for Better \u0026 Safer Long-term Care",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Xuemei Zhu",
+        "funding":  "",
+        "tags":  [
+                     "Health",
+                     "Aging"
+                 ],
+        "recruiting":  false,
+        "desc":  "Investigating how architectural design of long-term care facilities affects resident safety, physical activity, social engagement, and quality of life for older adults.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  5,
+        "abbr":  "HASD",
+        "title":  "Healthy and Active School Design",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Xuemei Zhu",
+        "funding":  "",
+        "tags":  [
+                     "Health",
+                     "Equity"
+                 ],
+        "recruiting":  false,
+        "desc":  "Examining how school building and campus design promotes or inhibits physical activity, active transportation, and healthy behaviors among K??2 students.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  6,
+        "abbr":  "iCAT",
+        "title":  "Intergenerational Communities Assessment Tool (iCAT)",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Chanam Lee",
+        "funding":  "",
+        "tags":  [
+                     "Equity",
+                     "Urban Design",
+                     "Aging"
+                 ],
+        "recruiting":  false,
+        "desc":  "Developing and validating a community assessment tool to measure how well neighborhoods support intergenerational interactions, social cohesion, and active aging.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  7,
+        "abbr":  "NbI-HCW",
+        "title":  "Nature-based Interventions for Healthcare Workers",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Dongying Li",
+        "funding":  "",
+        "tags":  [
+                     "Health"
+                 ],
+        "recruiting":  false,
+        "desc":  "Studying how exposure to nature-based environments ??including healing gardens and green spaces ??affects stress recovery, mental health, and well-being of healthcare workers.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  8,
+        "abbr":  "PedH",
+        "title":  "PedH (Pedestrian Health) Project",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Chanam Lee",
+        "funding":  "",
+        "tags":  [
+                     "Mobility",
+                     "Equity"
+                 ],
+        "recruiting":  false,
+        "desc":  "Analyzing how pedestrian infrastructure, street design, and walkability features impact health outcomes, injury risk, and physical activity across diverse populations.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  9,
+        "abbr":  "PSIHB",
+        "title":  "Programmable Surroundings \u0026 Their Impact on Human Behavior",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Zhipeng Lu",
+        "funding":  "",
+        "tags":  [
+                     "Urban Design"
+                 ],
+        "recruiting":  true,
+        "desc":  "Exploring how smart, programmable built environments and responsive design technologies can influence health behaviors and promote active living.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  10,
+        "abbr":  "GCP",
+        "title":  "The Green Campus Project",
+        "status":  "Active",
+        "startYear":  2021,
+        "endYear":  null,
+        "pi":  "Chanam Lee",
+        "funding":  null,
+        "tags":  [
+                     "Health",
+                     "Urban Design"
+                 ],
+        "recruiting":  false,
+        "memberIds":  [
+                          15
+                      ],
+        "desc":  "Quantify greenery on university campuses and examine the relationship between green infrastructure and health-related outcomes among students, faculty, and staff.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    },
+    {
+        "id":  11,
+        "abbr":  "UGIPH",
+        "title":  "Urban Green (Infra)structure for Pedestrian Health",
+        "status":  "Completed",
+        "startYear":  2020,
+        "endYear":  2021,
+        "pi":  "Sungmin Lee",
+        "funding":  null,
+        "tags":  [
+                     "Health",
+                     "Equity"
+                 ],
+        "recruiting":  false,
+        "memberIds":  [
+
+                      ],
+        "desc":  "Develop tools and protocols for measuring urban nature in 2D/3D environments and to explore its relationship with pedestrian health outcomes such as safety, thermal comfort, mood, and stress.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    },
+    {
+        "id":  12,
+        "abbr":  "Telemedicine",
+        "title":  "Examining telemedicine booths as a community-based intervention to improve healthcare access in minority and underserved communities",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Zhipeng Lu",
+        "funding":  "",
+        "tags":  [
+                     "Health",
+                     "Equity"
+                 ],
+        "recruiting":  false,
+        "desc":  "Examining how telemedicine booths can improve healthcare access in minority and underserved communities through innovative design interventions.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  13,
+        "abbr":  "Telehealth",
+        "title":  "From Skepticism to adoption: Examining the application of two telehealth modalities among older adults in rural Texas",
+        "status":  "Paused",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Zhipeng Lu",
+        "funding":  null,
+        "tags":  [
+                     "Health"
+                 ],
+        "recruiting":  false,
+        "memberIds":  [
+                          5,
+                          19
+                      ],
+        "desc":  "Examining barriers and facilitators to telehealth adoption among older adults in rural Texas through two different modalities.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    },
+    {
+        "id":  14,
+        "abbr":  "Green Street",
+        "title":  "CALT-Project 2 Green Street",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Sinan Zhong",
+        "funding":  "",
+        "tags":  [
+                     "Health"
+                 ],
+        "recruiting":  false,
+        "desc":  "Research on green street infrastructure and its impacts on community health and walkability.",
+        "partners":  "",
+        "driveUrl":  ""
+    },
+    {
+        "id":  15,
+        "abbr":  "Neighborhood \u0026 Health",
+        "title":  "DESIGN FOR HEALTH: Age-friendly Communities to Promote Healthy Aging in Place",
+        "status":  "Active",
+        "startYear":  null,
+        "endYear":  null,
+        "pi":  "Sinan Zhong",
+        "funding":  "COA Small Grant",
+        "tags":  [
+                     "Health"
+                 ],
+        "recruiting":  true,
+        "memberIds":  [
+                          11,
+                          2,
+                          22,
+                          21,
+                          16,
+                          32,
+                          27
+                      ],
+        "desc":  "This research aims to identify personal and environmental barriers and facilitators of health-related outcomes among older adults living in age-targeted vs. intergenerational communities.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    },
+    {
+        "id":  16,
+        "abbr":  "DFC",
+        "title":  "Dementia-Friendly Communities (Alzheimer Supplement)",
+        "status":  "Completed",
+        "startYear":  2018,
+        "endYear":  2022,
+        "pi":  null,
+        "funding":  null,
+        "tags":  [
+                     "Aging"
+                 ],
+        "recruiting":  false,
+        "memberIds":  [
+
+                      ],
+        "desc":  "Identify environmental strategies that promote physical activity, social interaction, and independence for people with Alzheimer\u0027s Disease and Related Dementias while reducing caregiver burden.",
+        "partners":  [
+
+                     ],
+        "photos":  [
+
+                   ],
+        "photoUrl":  null,
+        "driveUrl":  null
+    }
 ]
