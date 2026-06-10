@@ -351,23 +351,5 @@
     "photoUrl": null,
     "recruiting": false,
     "memberIds": []
-  },
-  {
-    "id": 18,
-    "title": "test",
-    "desc": "test",
-    "tags": [],
-    "abbr": "T",
-    "pi": null,
-    "funding": null,
-    "status": "Active",
-    "driveUrl": null,
-    "partners": [],
-    "startYear": null,
-    "endYear": null,
-    "photos": [],
-    "photoUrl": null,
-    "recruiting": false,
-    "memberIds": []
   }
 ]
