@@ -1921,9 +1921,14 @@ async function ghApi(path, options={}){
     Accept: 'application/vnd.github+json',
     Authorization: `token ${GH.token}`,
     'X-GitHub-Api-Version': '2022-11-28',
+    'Cache-Control': 'no-cache',
     ...(options.headers || {})
   };
-  const res = await fetch(`https://api.github.com/repos/${GH.repo}${path}`, { ...options, headers });
+  const res = await fetch(`https://api.github.com/repos/${GH.repo}${path}`, {
+    cache: 'no-store',
+    ...options,
+    headers
+  });
   if(!res.ok){
     const err = await res.json().catch(() => ({}));
     throw new Error(`${res.status}: ${err.message || res.statusText}`);
@@ -1932,6 +1937,42 @@ async function ghApi(path, options={}){
 }
 
 let _ghCommitQueue = Promise.resolve();
+const GH_WRITE_LOCK_KEY = 'dral-gh-write-lock';
+const GH_WRITE_LOCK_OWNER = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+async function ghAcquireWriteLock(timeoutMs=45000){
+  const started = Date.now();
+  while(Date.now() - started < timeoutMs){
+    let lock = null;
+    try{
+      lock = JSON.parse(localStorage.getItem(GH_WRITE_LOCK_KEY) || 'null');
+    }catch(e){
+      lock = null;
+    }
+    const expired = !lock || !lock.owner || Date.now() - Number(lock.time || 0) > 60000;
+    if(expired || lock.owner === GH_WRITE_LOCK_OWNER){
+      try{
+        localStorage.setItem(GH_WRITE_LOCK_KEY, JSON.stringify({
+          owner: GH_WRITE_LOCK_OWNER,
+          time: Date.now()
+        }));
+        const current = JSON.parse(localStorage.getItem(GH_WRITE_LOCK_KEY) || 'null');
+        if(current && current.owner === GH_WRITE_LOCK_OWNER) return true;
+      }catch(e){
+        return true;
+      }
+    }
+    await new Promise(r => setTimeout(r, 350 + Math.floor(Math.random() * 450)));
+  }
+  throw new Error('Another admin save is still in progress. Close other admin tabs, refresh this page, and try again.');
+}
+
+function ghReleaseWriteLock(){
+  try{
+    const lock = JSON.parse(localStorage.getItem(GH_WRITE_LOCK_KEY) || 'null');
+    if(lock && lock.owner === GH_WRITE_LOCK_OWNER) localStorage.removeItem(GH_WRITE_LOCK_KEY);
+  }catch(e){}
+}
 
 async function ghCommitFiles(files, message='Update website data'){
   if(!GH.token) return false;
@@ -1942,6 +1983,7 @@ async function ghCommitFiles(files, message='Update website data'){
     .catch(() => {})
     .then(async () => {
       try{
+        await ghAcquireWriteLock();
         for(const file of dataFiles){
           await ghPutJsonFile(`data/${file.filename}`, file.data, message);
         }
@@ -1950,6 +1992,8 @@ async function ghCommitFiles(files, message='Update website data'){
         console.error('GitHub save error:', e);
         alert(`Save failed:\n${e.message}\n\nYour on-screen change was not saved and has been rolled back. Please try again in a moment. Also check your PAT has Contents: write permission.`);
         return false;
+      }finally{
+        ghReleaseWriteLock();
       }
     });
   return _ghCommitQueue;
@@ -1961,7 +2005,8 @@ function ghContentPath(path){
 
 async function ghGetFileSha(path){
   try{
-    const file = await ghApi(`/contents/${ghContentPath(path)}?ref=${encodeURIComponent(GH.branch)}`);
+    const bust = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const file = await ghApi(`/contents/${ghContentPath(path)}?ref=${encodeURIComponent(GH.branch)}&t=${bust}`);
     return file && file.sha ? file.sha : null;
   }catch(e){
     if(/^404:/.test(e.message || '')) return null;
@@ -1971,7 +2016,8 @@ async function ghGetFileSha(path){
 
 async function ghPutJsonFile(path, data, message){
   const content = jsonToBase64(cleanForJson(data));
-  for(let attempt=1; attempt<=8; attempt++){
+  const maxAttempts = 12;
+  for(let attempt=1; attempt<=maxAttempts; attempt++){
     try{
       const sha = await ghGetFileSha(path);
       const body = {
@@ -1987,9 +2033,9 @@ async function ghPutJsonFile(path, data, message){
       });
       return true;
     }catch(e){
-      const conflict = /409|422|sha|Conflict|not fast forward|Update is not a fast forward/i.test(e.message || '');
-      if(conflict && attempt < 8){
-        await new Promise(r => setTimeout(r, 500 * attempt + Math.floor(Math.random() * 600)));
+      const conflict = /409|422|sha|does not match|Conflict|not fast forward|Update is not a fast forward/i.test(e.message || '');
+      if(conflict && attempt < maxAttempts){
+        await new Promise(r => setTimeout(r, 800 * attempt + Math.floor(Math.random() * 900)));
         continue;
       }
       throw e;
