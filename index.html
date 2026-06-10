@@ -1935,51 +1935,64 @@ let _ghCommitQueue = Promise.resolve();
 
 async function ghCommitFiles(files, message='Update website data'){
   if(!GH.token) return false;
-  const entries = files.filter(f => f && f.filename).map(f => ({
-    path: `data/${f.filename}`,
-    mode: '100644',
-    type: 'blob',
-    content: JSON.stringify(f.data, null, 2)
-  }));
-  if(!entries.length) return true;
+  const dataFiles = files.filter(f => f && f.filename);
+  if(!dataFiles.length) return true;
 
   _ghCommitQueue = _ghCommitQueue
     .catch(() => {})
-    .then(() => ghCommitEntries(entries, message));
+    .then(async () => {
+      try{
+        for(const file of dataFiles){
+          await ghPutJsonFile(`data/${file.filename}`, file.data, message);
+        }
+        return true;
+      }catch(e){
+        console.error('GitHub save error:', e);
+        alert(`Save failed:\n${e.message}\n\nYour on-screen change was not saved and has been rolled back. Please try again in a moment. Also check your PAT has Contents: write permission.`);
+        return false;
+      }
+    });
   return _ghCommitQueue;
 }
 
-async function ghCommitEntries(entries, message='Update website data'){
+function ghContentPath(path){
+  return path.split('/').map(encodeURIComponent).join('/');
+}
+
+async function ghGetFileSha(path){
+  try{
+    const file = await ghApi(`/contents/${ghContentPath(path)}?ref=${encodeURIComponent(GH.branch)}`);
+    return file && file.sha ? file.sha : null;
+  }catch(e){
+    if(/^404:/.test(e.message || '')) return null;
+    throw e;
+  }
+}
+
+async function ghPutJsonFile(path, data, message){
+  const content = jsonToBase64(cleanForJson(data));
   for(let attempt=1; attempt<=8; attempt++){
     try{
-      const ref = await ghApi(`/git/ref/heads/${encodeURIComponent(GH.branch)}`);
-      const headSha = ref.object.sha;
-      const headCommit = await ghApi(`/git/commits/${headSha}`);
-      const tree = await ghApi('/git/trees', {
-        method: 'POST',
+      const sha = await ghGetFileSha(path);
+      const body = {
+        message,
+        content,
+        branch: GH.branch
+      };
+      if(sha) body.sha = sha;
+      await ghApi(`/contents/${ghContentPath(path)}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base_tree: headCommit.tree.sha, tree: entries })
-      });
-      const commit = await ghApi('/git/commits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, tree: tree.sha, parents: [headSha] })
-      });
-      await ghApi(`/git/refs/heads/${encodeURIComponent(GH.branch)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sha: commit.sha, force: false })
+        body: JSON.stringify(body)
       });
       return true;
     }catch(e){
-      const conflict = /409|422|Reference update failed|fast forward|sha|Conflict/i.test(e.message || '');
+      const conflict = /409|422|sha|Conflict|not fast forward|Update is not a fast forward/i.test(e.message || '');
       if(conflict && attempt < 8){
-        await new Promise(r => setTimeout(r, 500 * attempt + Math.floor(Math.random() * 500)));
+        await new Promise(r => setTimeout(r, 500 * attempt + Math.floor(Math.random() * 600)));
         continue;
       }
-      console.error('GitHub commit error:', e);
-      alert(`Save failed:\n${e.message}\n\nYour on-screen change was not saved and has been rolled back. Please try again in a moment. Also check your PAT has Contents: write permission.`);
-      return false;
+      throw e;
     }
   }
   return false;
